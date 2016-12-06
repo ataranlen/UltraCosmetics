@@ -235,7 +235,7 @@ public class UltraCosmetics extends JavaPlugin {
      */
     @Override
     public void onEnable() {
-        if (!getServer().getVersion().contains("1.8.8") && !getServer().getVersion().contains("1.9") && !getServer().getVersion().contains("1.10")) {
+        if (!getServer().getVersion().contains("1.8.8") && !getServer().getVersion().contains("1.9") && !getServer().getVersion().contains("1.10") && !getServer().getVersion().contains("1.11")) {
             System.out.println("----------------------------\n\nUltraCosmetics requires Spigot 1.8.8 or 1.9 to work!\n\n----------------------------");
             getServer().getPluginManager().disablePlugin(this);
             return;
