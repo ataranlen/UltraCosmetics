@@ -1,3 +1,8 @@
+# 1.11 Update
+Based off version 2.3.9 of UltraCosmetics, now with support for Minecraft version 1.11
+
+Also fixed the thing with the zombie eggs not working with Minecraft version 1.8.8
+
 # UltraCosmetics
 UltraCosmetics is a Spigot 1.8.8/1.9.x/1.10 plugin which adds cool cosmetics for your server hub.
 
