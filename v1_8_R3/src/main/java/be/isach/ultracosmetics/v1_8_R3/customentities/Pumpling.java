@@ -27,6 +27,12 @@ public class Pumpling extends EntityZombie implements IPetCustomEntity {
         this.player = player;
     }
 
+    public Pumpling(World world) {
+        super(world);
+
+        this.player = player;
+    }
+
     public org.bukkit.entity.Entity getEntity() {
         return getBukkitEntity();
     }
