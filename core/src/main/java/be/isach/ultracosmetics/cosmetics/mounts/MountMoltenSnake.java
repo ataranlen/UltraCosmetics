@@ -1,8 +1,6 @@
 package be.isach.ultracosmetics.cosmetics.mounts;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.cosmetics.type.MountType;
-import be.isach.ultracosmetics.player.UltraPlayer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
@@ -15,6 +13,7 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by Sacha on 28/11/15.
@@ -27,13 +26,12 @@ public class MountMoltenSnake extends Mount {
     private float lastYaw;
     private float lastPitch;
 
-    public MountMoltenSnake(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
+    public MountMoltenSnake(UUID owner, UltraCosmetics ultraCosmetics) {
         super(owner, MountType.MOLTENSNAKE, ultraCosmetics);
     }
 
     @Override
-    public void onEquip() {
-        super.onEquip();
+    protected void onEquip() {
         MagmaCube magmaCube = (MagmaCube) entity;
         magmaCube.setSize(2);
         entities.add(magmaCube);
@@ -41,7 +39,7 @@ public class MountMoltenSnake extends Mount {
     }
 
     @Override
-    public void onUpdate() {
+    protected void onUpdate() {
         Vector playerVector = getPlayer().getLocation().getDirection().multiply(0.7);
         for (int i = 0; i < entities.size(); i++) {
             final Entity entity = entities.get(i);
@@ -75,13 +73,13 @@ public class MountMoltenSnake extends Mount {
             armorStand.setVisible(false);
             armorStand.setGravity(false);
             armorStand.setHelmet(new ItemStack(Material.NETHERRACK));
-            armorStand.setMetadata("NO_INTER", new FixedMetadataValue(getUltraCosmetics(), ""));
+            armorStand.setMetadata("NO_INTER", new FixedMetadataValue(UltraCosmetics.getInstance(), ""));
         }
     }
 
     @Override
-    public void onClear() {
-        super.onClear();
+    public void clear() {
+        super.clear();
         for (Entity entity : entities)
             entity.remove();
         entities.clear();

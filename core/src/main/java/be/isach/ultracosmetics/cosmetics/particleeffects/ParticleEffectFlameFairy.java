@@ -1,8 +1,5 @@
 package be.isach.ultracosmetics.cosmetics.particleeffects;
 
-import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.cosmetics.type.ParticleEffectType;
-import be.isach.ultracosmetics.player.UltraPlayer;
 import be.isach.ultracosmetics.util.MathUtils;
 import be.isach.ultracosmetics.util.Particles;
 import be.isach.ultracosmetics.util.UtilParticles;
@@ -22,8 +19,8 @@ public class ParticleEffectFlameFairy extends ParticleEffect {
 
     public double noMoveTime = 0, movementSpeed = 0.2d;
 
-    public ParticleEffectFlameFairy(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(ultraCosmetics, owner, ParticleEffectType.FLAMEFAIRY);
+    public ParticleEffectFlameFairy(UUID owner) {
+        super(owner, ParticleEffectType.FLAMEFAIRY);
 
         currentLocation = getPlayer().getLocation();
         targetLocation = generateNewTarget();
@@ -31,12 +28,7 @@ public class ParticleEffectFlameFairy extends ParticleEffect {
     }
 
     @Override
-    protected void onEquip() {
-
-    }
-
-    @Override
-    public void onUpdate() {
+    void onUpdate() {
         if (getPlayer().getWorld() != currentLocation.getWorld()
                 || getPlayer().getWorld() != targetLocation.getWorld()) {
             currentLocation = getPlayer().getLocation();

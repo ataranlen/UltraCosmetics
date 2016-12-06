@@ -1,9 +1,6 @@
 package be.isach.ultracosmetics.cosmetics.gadgets;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.UltraCosmeticsData;
-import be.isach.ultracosmetics.player.UltraPlayer;
-import be.isach.ultracosmetics.cosmetics.type.GadgetType;
 import be.isach.ultracosmetics.util.*;
 import org.bukkit.*;
 import org.bukkit.entity.*;
@@ -11,6 +8,7 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by Sacha on 12/10/15.
@@ -19,8 +17,9 @@ public class GadgetQuakeGun extends Gadget {
 
     List<Firework> fireworkList = new ArrayList<>();
 
-    public GadgetQuakeGun(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(owner, GadgetType.QUAKEGUN, ultraCosmetics);
+    public GadgetQuakeGun(UUID owner) {
+        super(owner, GadgetType.QUAKEGUN);
+        UltraCosmetics.getInstance().registerListener(this);
     }
 
     @Override
@@ -47,15 +46,15 @@ public class GadgetQuakeGun extends Gadget {
                         FireworkEffect.Builder builder = FireworkEffect.builder();
                         FireworkEffect effect = builder.flicker(false).trail(false).with(FireworkEffect.Type.BALL_LARGE)
                                 .withColor(Color.RED).withFade(Color.ORANGE).build();
-                        UltraCosmeticsData.get().getVersionManager().getFireworkFactory().spawn(location, effect);
+                        UltraCosmetics.getInstance().getFireworkFactory().spawn(location, effect);
                     }
                 }
         }
-        Bukkit.getScheduler().runTaskLaterAsynchronously(getUltraCosmetics(), new Runnable() {
+        Bukkit.getScheduler().runTaskLaterAsynchronously(UltraCosmetics.getInstance(), new Runnable() {
             @Override
             public void run() {
                 for (Firework firework : fireworkList)
-                    UltraCosmeticsData.get().getVersionManager().getEntityUtil().sendDestroyPacket(getPlayer(), firework);
+                    UltraCosmetics.getInstance().getEntityUtil().sendDestroyPacket(getPlayer(), firework);
             }
         }, 6);
     }
@@ -65,7 +64,7 @@ public class GadgetQuakeGun extends Gadget {
     }
 
     @Override
-    public void onUpdate() {
+    void onUpdate() {
     }
 
     @Override

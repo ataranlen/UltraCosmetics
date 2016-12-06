@@ -1,8 +1,5 @@
 package be.isach.ultracosmetics.cosmetics.particleeffects;
 
-import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.cosmetics.type.ParticleEffectType;
-import be.isach.ultracosmetics.player.UltraPlayer;
 import be.isach.ultracosmetics.util.UtilParticles;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
@@ -17,8 +14,8 @@ public class ParticleEffectAngelWings extends ParticleEffect {
     boolean x = true;
     boolean o = false;
 
-    public ParticleEffectAngelWings(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(ultraCosmetics, owner, ParticleEffectType.ANGELWINGS);
+    public ParticleEffectAngelWings(UUID owner) {
+        super(owner, ParticleEffectType.ANGELWINGS);
     }
 
     private boolean[][] shape = {
@@ -34,12 +31,7 @@ public class ParticleEffectAngelWings extends ParticleEffect {
     };
 
     @Override
-    protected void onEquip() {
-
-    }
-
-    @Override
-    public void onUpdate() {
+    void onUpdate() {
         drawParticles(getPlayer().getLocation());
     }
 

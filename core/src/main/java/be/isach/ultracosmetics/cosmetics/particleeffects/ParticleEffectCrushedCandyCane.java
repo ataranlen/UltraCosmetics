@@ -1,8 +1,5 @@
 package be.isach.ultracosmetics.cosmetics.particleeffects;
 
-import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.cosmetics.type.ParticleEffectType;
-import be.isach.ultracosmetics.player.UltraPlayer;
 import be.isach.ultracosmetics.util.Particles;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -19,17 +16,12 @@ public class ParticleEffectCrushedCandyCane extends ParticleEffect {
 
     private static Random random = new Random();
 
-    public ParticleEffectCrushedCandyCane(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(ultraCosmetics, owner, ParticleEffectType.CRUSHEDCANDYCANE);
+    public ParticleEffectCrushedCandyCane(UUID owner) {
+        super(owner, ParticleEffectType.CRUSHEDCANDYCANE);
     }
 
     @Override
-    protected void onEquip() {
-
-    }
-
-    @Override
-    public void onUpdate() {
+    void onUpdate() {
         if (step > 360)
             step = 0;
         Location center = getPlayer().getEyeLocation().add(0, 0.6, 0);

@@ -1,9 +1,6 @@
 package be.isach.ultracosmetics.v1_9_R2.customentities;
 
-import net.minecraft.server.v1_9_R2.BiomeBase;
-import net.minecraft.server.v1_9_R2.Entity;
-import net.minecraft.server.v1_9_R2.EntityInsentient;
-import net.minecraft.server.v1_9_R2.EntityTypes;
+import net.minecraft.server.v1_9_R2.*;
 import org.bukkit.entity.EntityType;
 
 import java.lang.reflect.Field;
@@ -79,6 +76,7 @@ public enum CustomEntities {
                     e.printStackTrace();
                 }
         }
+        System.out.println("ENTITIES REGISTERED.");
     }
 
     @SuppressWarnings("rawtypes")

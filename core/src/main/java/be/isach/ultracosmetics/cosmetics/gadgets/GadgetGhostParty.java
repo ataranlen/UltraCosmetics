@@ -1,8 +1,7 @@
 package be.isach.ultracosmetics.cosmetics.gadgets;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.player.UltraPlayer;
-import be.isach.ultracosmetics.cosmetics.type.GadgetType;
+import be.isach.ultracosmetics.cosmetics.pets.Pet;
 import be.isach.ultracosmetics.util.ItemFactory;
 import be.isach.ultracosmetics.util.Particles;
 import be.isach.ultracosmetics.util.UtilParticles;
@@ -19,6 +18,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Created by Sacha on 18/10/15.
@@ -27,8 +27,11 @@ public class GadgetGhostParty extends Gadget {
 
     Map<Bat, ArmorStand> bats = new HashMap<>();
 
-    public GadgetGhostParty(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(owner, GadgetType.GHOSTPARTY, ultraCosmetics);
+    public GadgetGhostParty(UUID owner) {
+        super(owner, GadgetType.GHOSTPARTY);
+
+        if (owner != null)
+            UltraCosmetics.getInstance().registerListener(this);
     }
 
     @Override
@@ -45,8 +48,9 @@ public class GadgetGhostParty extends Gadget {
             bat.setPassenger(ghost);
             bat.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 160, 1));
             bats.put(bat, ghost);
+            Pet.PET_NAMES.add(ghost);
         }
-        Bukkit.getScheduler().runTaskLaterAsynchronously(getUltraCosmetics(), new Runnable() {
+        Bukkit.getScheduler().runTaskLaterAsynchronously(UltraCosmetics.getInstance(), new Runnable() {
             @Override
             public void run() {
                 killBats();
@@ -75,7 +79,7 @@ public class GadgetGhostParty extends Gadget {
     }
 
     @Override
-    public void onUpdate() {
+    void onUpdate() {
         try {
             if (!bats.isEmpty()) {
                 for (Bat bat : bats.keySet())
@@ -83,11 +87,6 @@ public class GadgetGhostParty extends Gadget {
             }
         } catch (Exception exc) {
         }
-    }
-
-    @Override
-    protected void onEquip() {
-
     }
 
     @Override

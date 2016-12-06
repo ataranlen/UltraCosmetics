@@ -1,8 +1,3 @@
-# 1.11 Update!
-I've changed this up some to use maven instead of gradle, so it looks a lot different from the original but is actually mostly the same. Just had to change some things to make it work with 1.11! :D
-
-Also fixed the bug with the zombie eggs not working in v1_8_R3.
-
 # UltraCosmetics
 UltraCosmetics is a Spigot 1.8.8/1.9.x/1.10 plugin which adds cool cosmetics for your server hub.
 

@@ -1,8 +1,6 @@
 package be.isach.ultracosmetics.cosmetics.gadgets;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.player.UltraPlayer;
-import be.isach.ultracosmetics.cosmetics.type.GadgetType;
 import be.isach.ultracosmetics.util.ItemFactory;
 import be.isach.ultracosmetics.util.MathUtils;
 import be.isach.ultracosmetics.util.Particles;
@@ -27,8 +25,8 @@ public class GadgetBlackHole extends Gadget {
 
     Item i;
 
-    public GadgetBlackHole(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(owner, GadgetType.BLACKHOLE, ultraCosmetics);
+    public GadgetBlackHole(UUID owner) {
+        super(owner, GadgetType.BLACKHOLE);
     }
 
     @Override
@@ -41,7 +39,7 @@ public class GadgetBlackHole extends Gadget {
         item.setPickupDelay(Integer.MAX_VALUE);
         item.setVelocity(getPlayer().getEyeLocation().getDirection().multiply(1.3d));
         i = item;
-        Bukkit.getScheduler().runTaskLater(getUltraCosmetics(), new Runnable() {
+        Bukkit.getScheduler().runTaskLater(UltraCosmetics.getInstance(), new Runnable() {
             @Override
             public void run() {
                 if (i != null) {
@@ -53,7 +51,7 @@ public class GadgetBlackHole extends Gadget {
     }
 
     @Override
-    public void onUpdate() {
+    void onUpdate() {
 
         if (i != null && i.isOnGround()) {
             int strands = 6;
@@ -75,14 +73,14 @@ public class GadgetBlackHole extends Gadget {
                 }
             }
             if (affectPlayers)
-                for (final Entity entity : i.getNearbyEntities(5, 3, 5)) {
-                    Vector vector = i.getLocation().toVector().subtract(entity.getLocation().toVector());
-                    MathUtils.applyVelocity(entity, vector);
-                    Bukkit.getScheduler().runTask(getUltraCosmetics(), new Runnable() {
+                for (final Entity ENT : i.getNearbyEntities(5, 3, 5)) {
+                    Vector vector = i.getLocation().toVector().subtract(ENT.getLocation().toVector());
+                    MathUtils.applyVelocity(ENT, vector);
+                    Bukkit.getScheduler().runTask(UltraCosmetics.getInstance(), new Runnable() {
                         @Override
                         public void run() {
-                            if (entity instanceof Player)
-                                ((Player) entity).addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 40, 40));
+                            if (ENT instanceof Player)
+                                ((Player) ENT).addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 40, 40));
                         }
                     });
                 }

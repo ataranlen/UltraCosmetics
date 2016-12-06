@@ -1,7 +1,6 @@
 package be.isach.ultracosmetics.command;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.command.subcommands.*;
 import be.isach.ultracosmetics.config.MessageManager;
 import be.isach.ultracosmetics.util.MathUtils;
 import org.bukkit.command.Command;
@@ -9,6 +8,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,15 +22,12 @@ public class CommandManager implements CommandExecutor {
     /**
      * List of the registered commands.
      */
-    private List<SubCommand> commands = new ArrayList<>();
+    public List<SubCommand> commands = new ArrayList<>();
 
-    private UltraCosmetics ultraCosmetics;
-
-    public CommandManager(UltraCosmetics ultraCosmetics) {
-        this.ultraCosmetics = ultraCosmetics;
-        ultraCosmetics.getServer().getPluginCommand("ultracosmetics").setExecutor(this);
+    public CommandManager(Plugin plugin) {
+        plugin.getServer().getPluginCommand("ultracosmetics").setExecutor(this);
         String[] aliases = {"uc", "cosmetics"};
-        ultraCosmetics.getServer().getPluginCommand("ultracosmetics").setAliases(Arrays.asList(aliases));
+        plugin.getServer().getPluginCommand("ultracosmetics").setAliases(Arrays.asList(aliases));
     }
 
     /**
@@ -40,6 +37,7 @@ public class CommandManager implements CommandExecutor {
      */
     public void registerCommand(SubCommand meCommand) {
         commands.add(meCommand);
+        UltraCosmetics.log("  Registered subcommand '" + meCommand.aliases[0] + "'");
     }
 
     public void showHelp(CommandSender commandSender, int page) {
@@ -74,22 +72,20 @@ public class CommandManager implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] arguments) {
 
-        if (!(sender instanceof Player) && !(sender instanceof ConsoleCommandSender)) {
+        if (!(sender instanceof Player) && !(sender instanceof CommandSender))
             return false;
-        }
 
         if (arguments == null
                 || arguments.length == 0) {
             showHelp(sender, 1);
             return true;
         }
-
         if (arguments.length == 1 && MathUtils.isInteger(arguments[0])) {
             showHelp(sender, Math.max(1, Math.min(Integer.parseInt(arguments[0]), getMaxPages())));
             return true;
         }
 
-        for (SubCommand meCommand : commands) {
+        for (SubCommand meCommand : commands)
             if (meCommand.is(arguments[0])) {
 
                 if (!sender.hasPermission(meCommand.getPermission())) {
@@ -97,31 +93,15 @@ public class CommandManager implements CommandExecutor {
                     return true;
                 }
 
-                if (sender instanceof Player) {
+                if (sender instanceof Player)
                     meCommand.onExePlayer((Player) sender, arguments);
-                } else {
+                else
                     meCommand.onExeConsole((ConsoleCommandSender) sender, arguments);
-                }
                 return true;
             }
-        }
         showHelp(sender, 1);
 
         return true;
-    }
-
-    public List<SubCommand> getCommands() {
-        return commands;
-    }
-
-    public void registerCommands(UltraCosmetics ultraCosmetics) {
-        registerCommand(new SubCommandGadgets(ultraCosmetics));
-        registerCommand(new SubCommandSelfView(ultraCosmetics));
-        registerCommand(new SubCommandMenu(ultraCosmetics));
-        registerCommand(new SubCommandGive(ultraCosmetics));
-        registerCommand(new SubCommandToggle(ultraCosmetics));
-        registerCommand(new SubCommandClear(ultraCosmetics));
-        registerCommand(new SubCommandTreasure(ultraCosmetics));
     }
 }
 

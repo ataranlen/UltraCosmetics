@@ -1,14 +1,11 @@
 package be.isach.ultracosmetics.v1_8_R3.mount;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.UltraCosmeticsData;
 import be.isach.ultracosmetics.config.MessageManager;
 import be.isach.ultracosmetics.cosmetics.mounts.IMountCustomEntity;
 import be.isach.ultracosmetics.cosmetics.mounts.Mount;
-import be.isach.ultracosmetics.cosmetics.type.MountType;
-import be.isach.ultracosmetics.player.UltraPlayer;
+import be.isach.ultracosmetics.cosmetics.mounts.MountType;
 import be.isach.ultracosmetics.util.EntitySpawningManager;
-import be.isach.ultracosmetics.util.TextUtil;
 import be.isach.ultracosmetics.v1_8_R3.customentities.CustomEntities;
 import be.isach.ultracosmetics.v1_8_R3.customentities.CustomSlime;
 import be.isach.ultracosmetics.v1_8_R3.customentities.FlyingSquid;
@@ -20,28 +17,30 @@ import org.bukkit.craftbukkit.v1_8_R3.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.UUID;
+
 /**
  * Created by Sacha on 15/03/16.
  */
-public abstract class MountCustomEntity<E extends org.bukkit.entity.Entity> extends Mount<E> {
+public abstract class MountCustomEntity extends Mount {
 
     /**
      * Custom Entity.
      */
     public IMountCustomEntity customEntity;
 
-    public MountCustomEntity(UltraPlayer owner, MountType type, UltraCosmetics ultraCosmetics) {
+    public MountCustomEntity(UUID owner, MountType type, UltraCosmetics ultraCosmetics) {
         super(owner, type, ultraCosmetics);
     }
 
     @Override
-    public void onEquip() {
+    public void equip() {
         if (getType() == MountType.SKYSQUID)
             customEntity = new FlyingSquid(((CraftPlayer) getPlayer()).getHandle().getWorld());
         else if (getType() == MountType.SLIME)
             customEntity = new CustomSlime(((CraftPlayer) getPlayer()).getHandle().getWorld());
         else if (getType() == MountType.SPIDER)
-            customEntity = new RideableSpider(((CraftWorld) getPlayer().getWorld()).getHandle());
+            customEntity = new RideableSpider(((CraftPlayer) getPlayer()).getHandle().getWorld());
         double x = getPlayer().getLocation().getX();
         double y = getPlayer().getLocation().getY();
         double z = getPlayer().getLocation().getZ();
@@ -50,12 +49,8 @@ public abstract class MountCustomEntity<E extends org.bukkit.entity.Entity> exte
         EntitySpawningManager.setBypass(true);
         ((CraftWorld) getPlayer().getWorld()).getHandle().addEntity(getCustomEntity());
         EntitySpawningManager.setBypass(false);
-        UltraCosmeticsData.get().getVersionManager().getEntityUtil().setPassenger(getEntity(), getPlayer());
+        UltraCosmetics.getInstance().getEntityUtil().setPassenger(getEntity(), getPlayer());
         CustomEntities.customEntities.add(getCustomEntity());
-        customEntity.removeAi();
-
-        this.entity = (E) customEntity.getEntity();
-
         BukkitRunnable runnable = new BukkitRunnable() {
             @Override
             public void run() {
@@ -69,10 +64,10 @@ public abstract class MountCustomEntity<E extends org.bukkit.entity.Entity> exte
                         cancel();
                         return;
                     }
-                    if (getOwner() != null
-                            && Bukkit.getPlayer(getOwnerUniqueId()) != null
-                            && getOwner().getCurrentMount() != null
-                            && getOwner().getCurrentMount().getType() == getType()) {
+                    if (owner != null
+                            && Bukkit.getPlayer(owner) != null
+                            && UltraCosmetics.getCustomPlayer(Bukkit.getPlayer(owner)).currentMount != null
+                            && UltraCosmetics.getCustomPlayer(Bukkit.getPlayer(owner)).currentMount.getType() == getType()) {
                         onUpdate();
                     } else {
                         cancel();
@@ -84,9 +79,11 @@ public abstract class MountCustomEntity<E extends org.bukkit.entity.Entity> exte
                 }
             }
         };
-        runnable.runTaskTimerAsynchronously(getUltraCosmetics(), 0, getType().getRepeatDelay());
+        runnable.runTaskTimerAsynchronously(UltraCosmetics.getInstance(), 0, repeatDelay);
+        listener = new MountListener(this);
 
-        getOwner().setCurrentMount(this);
+        getPlayer().sendMessage(MessageManager.getMessage("Mounts.Spawn").replace("%mountname%", (UltraCosmetics.getInstance().placeHolderColor) ? getType().getMenuName() : UltraCosmetics.filterColor(getType().getMenuName())));
+        UltraCosmetics.getCustomPlayer(getPlayer()).currentMount = this;
     }
 
     @Override
@@ -95,13 +92,13 @@ public abstract class MountCustomEntity<E extends org.bukkit.entity.Entity> exte
         CustomEntities.customEntities.remove(customEntity);
     }
 
+
     @Override
-    public E getEntity() {
-        return (E)customEntity.getEntity();
+    public org.bukkit.entity.Entity getEntity() {
+        return customEntity.getEntity();
     }
 
     public Entity getCustomEntity() {
         return ((CraftEntity) customEntity.getEntity()).getHandle();
     }
 }
-

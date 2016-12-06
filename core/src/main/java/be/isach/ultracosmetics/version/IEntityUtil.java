@@ -1,6 +1,6 @@
 package be.isach.ultracosmetics.version;
 
-import be.isach.ultracosmetics.treasurechests.TreasureChestDesign;
+import be.isach.ultracosmetics.cosmetics.treasurechests.TreasureChestDesign;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
@@ -48,6 +48,4 @@ public interface IEntityUtil {
     void chickenFall(Player player);
 
     void sendTeleportPacket(Player player, Entity entity);
-
-    boolean isMoving(Player entity);
 }

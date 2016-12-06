@@ -1,7 +1,6 @@
 package be.isach.ultracosmetics.util;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.UltraCosmeticsData;
 import be.isach.ultracosmetics.config.SettingsManager;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
@@ -41,7 +40,7 @@ public class ItemFactory {
 
     public static void fillInventory(Inventory inventory) {
         if (SettingsManager.getConfig().getBoolean("Fill-Blank-Slots-With-Item.Enabled")) {
-            MaterialData materialData = getMaterialData(SettingsManager.getConfig().getString("Fill-Blank-Slots-With-Item.Item"));
+            MaterialData materialData = getMaterialData(UltraCosmetics.config.getString("Fill-Blank-Slots-With-Item.Item"));
             ItemStack itemStack = materialData.toItemStack(1);
             ItemMeta itemMeta = itemStack.getItemMeta();
             itemMeta.setDisplayName("§7");
@@ -93,6 +92,6 @@ public class ItemFactory {
     }
 
     public static ItemStack addGlow(ItemStack item) {
-        return UltraCosmeticsData.get().getVersionManager().getItemGlower().glow(item);
+        return UltraCosmetics.getInstance().getItemGlower().glow(item);
     }
 }

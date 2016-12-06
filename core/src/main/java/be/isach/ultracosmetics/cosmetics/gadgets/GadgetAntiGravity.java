@@ -1,8 +1,6 @@
 package be.isach.ultracosmetics.cosmetics.gadgets;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.player.UltraPlayer;
-import be.isach.ultracosmetics.cosmetics.type.GadgetType;
 import be.isach.ultracosmetics.util.MathUtils;
 import be.isach.ultracosmetics.util.Particles;
 import be.isach.ultracosmetics.util.UtilParticles;
@@ -17,6 +15,8 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
+import java.util.UUID;
+
 /**
  * Created by sacha on 10/08/15.
  */
@@ -26,8 +26,9 @@ public class GadgetAntiGravity extends Gadget {
     boolean running;
 
 
-    public GadgetAntiGravity(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(owner, GadgetType.ANTIGRAVITY, ultraCosmetics);
+    public GadgetAntiGravity(UUID owner) {
+        super(owner, GadgetType.ANTIGRAVITY);
+        UltraCosmetics.getInstance().registerListener(this);
     }
 
     @Override
@@ -38,12 +39,12 @@ public class GadgetAntiGravity extends Gadget {
         running = true;
         as.setVisible(false);
         as.setHelmet(new ItemStack(Material.SEA_LANTERN));
-        Bukkit.getScheduler().runTaskLater(getUltraCosmetics(), new Runnable() {
+        Bukkit.getScheduler().runTaskLater(UltraCosmetics.getInstance(), new Runnable() {
             @Override
             public void run() {
                 as.remove();
                 as = null;
-                Bukkit.getScheduler().runTaskLater(getUltraCosmetics(), new Runnable() {
+                Bukkit.getScheduler().runTaskLater(UltraCosmetics.getInstance(), new Runnable() {
                     @Override
                     public void run() {
                         running = false;
@@ -59,7 +60,7 @@ public class GadgetAntiGravity extends Gadget {
     }
 
     @Override
-    public void onUpdate() {
+    void onUpdate() {
         if (as != null && as.isValid()) {
             as.setHeadPose(as.getHeadPose().add(0, 0.1, 0));
             UtilParticles.display(Particles.PORTAL, 3f, 3f, 3f, as.getLocation(), 150);

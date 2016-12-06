@@ -1,6 +1,6 @@
 package be.isach.ultracosmetics.listeners.v1_9;
 
-import be.isach.ultracosmetics.player.UltraPlayer;
+import be.isach.ultracosmetics.UltraPlayer;
 import be.isach.ultracosmetics.UltraCosmetics;
 import be.isach.ultracosmetics.config.SettingsManager;
 import be.isach.ultracosmetics.cosmetics.gadgets.Gadget;
@@ -15,18 +15,12 @@ import org.bukkit.inventory.ItemStack;
  */
 public class PlayerSwapItemListener implements Listener {
 
-    private UltraCosmetics ultraCosmetics;
-
-    public PlayerSwapItemListener(UltraCosmetics ultraCosmetics) {
-        this.ultraCosmetics = ultraCosmetics;
-    }
-
     @EventHandler
     public void cancelOffHandMove(PlayerSwapHandItemsEvent event) {
         Player player = event.getPlayer();
-        UltraPlayer ultraPlayer = ultraCosmetics.getPlayerManager().getUltraPlayer(player);
-        if(ultraPlayer.getCurrentGadget() != null) {
-            Gadget gadget = ultraPlayer.getCurrentGadget();
+        UltraPlayer customPlayer = UltraCosmetics.getCustomPlayer(player);
+        if(customPlayer.currentGadget != null) {
+            Gadget gadget = customPlayer.currentGadget;
             ItemStack itemStack = gadget.getItemStack();
             if (event.getMainHandItem() != null) {
                 if (event.getMainHandItem().equals(itemStack)) {

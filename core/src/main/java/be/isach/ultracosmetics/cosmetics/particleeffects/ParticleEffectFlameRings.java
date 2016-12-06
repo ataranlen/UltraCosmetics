@@ -1,11 +1,10 @@
 package be.isach.ultracosmetics.cosmetics.particleeffects;
 
-import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.cosmetics.type.ParticleEffectType;
-import be.isach.ultracosmetics.player.UltraPlayer;
 import be.isach.ultracosmetics.util.MathUtils;
 import be.isach.ultracosmetics.util.UtilParticles;
 import org.bukkit.util.Vector;
+
+import java.util.UUID;
 
 /**
  * Created by sacha on 12/08/15.
@@ -14,17 +13,17 @@ public class ParticleEffectFlameRings extends ParticleEffect {
 
     float step = 0;
 
-    public ParticleEffectFlameRings(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(ultraCosmetics, owner, ParticleEffectType.FLAMERINGS);
+    public ParticleEffectFlameRings(UUID owner) {
+        super(owner,
+                ParticleEffectType.FLAMERINGS
+        );
+        if (owner != null) {
+
+        }
     }
 
     @Override
-    protected void onEquip() {
-
-    }
-
-    @Override
-    public void onUpdate() {
+    void onUpdate() {
         for (int i = 0; i < 2; i++) {
             double inc = (2 * Math.PI) / 100;
             double toAdd = 0;

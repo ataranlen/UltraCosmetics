@@ -1,9 +1,6 @@
 package be.isach.ultracosmetics.cosmetics.gadgets;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.config.MessageManager;
-import be.isach.ultracosmetics.player.UltraPlayer;
-import be.isach.ultracosmetics.cosmetics.type.GadgetType;
 import be.isach.ultracosmetics.util.Cuboid;
 import be.isach.ultracosmetics.util.EntityUtils;
 import be.isach.ultracosmetics.util.MathUtils;
@@ -16,12 +13,12 @@ import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.material.MaterialData;
 import org.bukkit.util.Vector;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Created by Sacha on 19/12/15.
@@ -34,8 +31,8 @@ public class GadgetTrampoline extends Gadget {
     private Location initialCenter;
     private boolean running;
 
-    public GadgetTrampoline(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(owner, GadgetType.TRAMPOLINE, ultraCosmetics);
+    public GadgetTrampoline(UUID owner) {
+        super(owner, GadgetType.TRAMPOLINE);
 
         if (owner == null) return;
 
@@ -70,29 +67,12 @@ public class GadgetTrampoline extends Gadget {
     }
 
     @Override
-    protected boolean checkRequirements(PlayerInteractEvent event) {
-        Location loc1 = getPlayer().getLocation().add(2, 15, 2);
-        Location loc2 = getPlayer().getLocation().clone().add(-2, 0, -2);
-        Block block = loc1.getBlock().getRelative(3, 0, 0);
-        Block block2 = loc1.getBlock().getRelative(3, 1, 0);
-        Cuboid checkCuboid = new Cuboid(loc1, loc2);
-
-        if (!checkCuboid.isEmpty()
-                || block.getType() != Material.AIR
-                || block2.getType() != Material.AIR) {
-            getPlayer().sendMessage(MessageManager.getMessage("Gadgets.Rocket.Not-Enough-Space"));
-            return false;
-        }
-        return true;
-    }
-
-    @Override
     void onLeftClick() {
     }
 
     @Override
-    public void onUpdate() {
-        Bukkit.getScheduler().runTask(getUltraCosmetics(), new Runnable() {
+    void onUpdate() {
+        Bukkit.getScheduler().runTask(UltraCosmetics.getInstance(), new Runnable() {
             @Override
             public void run() {
                 for (Entity entity : EntityUtils.getEntitiesInRadius(initialCenter, 4d)) {
@@ -148,7 +128,7 @@ public class GadgetTrampoline extends Gadget {
         genLadder(get(-3, 1, 0));
         genLadder(get(-3, 0, 0));
 
-        Bukkit.getScheduler().runTaskLater(getUltraCosmetics(), new Runnable() {
+        Bukkit.getScheduler().runTaskLater(UltraCosmetics.getInstance(), new Runnable() {
             @Override
             public void run() {
                 clearBlocks();

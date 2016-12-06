@@ -1,7 +1,6 @@
 package be.isach.ultracosmetics.config;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.UltraCosmeticsData;
 import be.isach.ultracosmetics.util.CustomConfiguration;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -34,15 +33,15 @@ public class SettingsManager {
      */
     private SettingsManager(String fileName) {
 
-        if (!UltraCosmeticsData.get().getPlugin().getDataFolder().exists()) {
-            UltraCosmeticsData.get().getPlugin().getDataFolder().mkdir();
+        if (!UltraCosmetics.getInstance().getDataFolder().exists()) {
+            UltraCosmetics.getInstance().getDataFolder().mkdir();
         }
 
-        File f = new File(UltraCosmeticsData.get().getPlugin().getDataFolder(), "/data");
+        File f = new File(UltraCosmetics.getInstance().getDataFolder(), "/data");
         if (!f.exists())
             f.mkdirs();
 
-        file = new File(UltraCosmeticsData.get().getPlugin().getDataFolder(), fileName + ".yml");
+        file = new File(UltraCosmetics.getInstance().getDataFolder(), fileName + ".yml");
 
         if (!file.exists()) {
             try {
@@ -57,10 +56,12 @@ public class SettingsManager {
 
     /**
      * Creates a new file and defines fileConfiguration and file.
+     *
+     * @param fileName
      */
     private SettingsManager() {
-        file = new File(UltraCosmeticsData.get().getPlugin().getDataFolder(), "config.yml");
-        fileConfiguration = UltraCosmeticsData.get().getPlugin().getConfig();
+        file = new File(UltraCosmetics.getInstance().getDataFolder(), "config.yml");
+        fileConfiguration = UltraCosmetics.config;
     }
 
     /**
@@ -78,7 +79,7 @@ public class SettingsManager {
      * @return the messages SettingsManager.
      */
     public static CustomConfiguration getConfig() {
-        return UltraCosmeticsData.get().getPlugin().getConfig();
+        return UltraCosmetics.config;
     }
 
     /**
@@ -102,7 +103,7 @@ public class SettingsManager {
     }
 
     public static boolean hasData(UUID uuid) {
-        return Arrays.asList(UltraCosmeticsData.get().getPlugin().getDataFolder()
+        return Arrays.asList(UltraCosmetics.getInstance().getDataFolder()
                 .listFiles()).contains(new File(uuid.toString() + ".yml"));
     }
 

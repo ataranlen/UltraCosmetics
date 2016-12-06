@@ -1,6 +1,5 @@
 package be.isach.ultracosmetics.command.subcommands;
 
-import be.isach.ultracosmetics.UltraCosmetics;
 import be.isach.ultracosmetics.command.SubCommand;
 import be.isach.ultracosmetics.manager.TreasureChestManager;
 import be.isach.ultracosmetics.util.MathUtils;
@@ -17,8 +16,8 @@ import org.bukkit.entity.Player;
  */
 public class SubCommandTreasure extends SubCommand {
 
-    public SubCommandTreasure(UltraCosmetics ultraCosmetics) {
-        super("Starts Treasure Chest.", "ultracosmetics.command.treasure", "/uc treasure <player> <x> <y> <z> <world>", ultraCosmetics, "treasure");
+    public SubCommandTreasure() {
+        super("Starts Treasure Chest.", "ultracosmetics.command.treasure", "/uc treasure <player> <x> <y> <z> <world>", "treasure");
     }
 
     @Override
@@ -74,6 +73,6 @@ public class SubCommandTreasure extends SubCommand {
 
         opener.teleport(location);
 
-        getUltraCosmetics().getTreasureChestManager().tryOpenChest(opener);
+        TreasureChestManager.tryOpenChest(opener);
     }
 }

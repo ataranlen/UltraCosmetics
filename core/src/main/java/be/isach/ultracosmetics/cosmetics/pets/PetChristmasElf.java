@@ -1,8 +1,7 @@
 package be.isach.ultracosmetics.cosmetics.pets;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.cosmetics.type.PetType;
-import be.isach.ultracosmetics.player.UltraPlayer;
+import be.isach.ultracosmetics.util.ItemFactory;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import org.apache.commons.codec.binary.Base64;
@@ -40,16 +39,16 @@ public class PetChristmasElf extends Pet {
 
     Random r = new Random();
 
-    public PetChristmasElf(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(owner, ultraCosmetics, PetType.CHRISTMASELF);
+    public PetChristmasElf(UUID owner) {
+        super(owner, PetType.CHRISTMASELF);
     }
 
     @Override
-    public void onUpdate() {
+    protected void onUpdate() {
         final Item ITEM = entity.getWorld().dropItem(((Villager) entity).getEyeLocation(), presents.get(r.nextInt(presents.size())));
         ITEM.setPickupDelay(30000);
         ITEM.setVelocity(new Vector(r.nextDouble() - 0.5, r.nextDouble() / 2.0 + 0.3, r.nextDouble() - 0.5).multiply(0.4));
-        Bukkit.getScheduler().runTaskLater(getUltraCosmetics(), new Runnable() {
+        Bukkit.getScheduler().runTaskLater(UltraCosmetics.getInstance(), new Runnable() {
             @Override
             public void run() {
                 ITEM.remove();

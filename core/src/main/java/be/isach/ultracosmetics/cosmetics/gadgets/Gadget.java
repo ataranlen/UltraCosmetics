@@ -1,23 +1,18 @@
 package be.isach.ultracosmetics.cosmetics.gadgets;
 
+import be.isach.ultracosmetics.UltraPlayer;
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.UltraCosmeticsData;
 import be.isach.ultracosmetics.config.MessageManager;
 import be.isach.ultracosmetics.config.SettingsManager;
-import be.isach.ultracosmetics.cosmetics.Category;
-import be.isach.ultracosmetics.cosmetics.Cosmetic;
-import be.isach.ultracosmetics.cosmetics.Updatable;
-import be.isach.ultracosmetics.cosmetics.type.GadgetType;
-import be.isach.ultracosmetics.player.UltraPlayer;
+import be.isach.ultracosmetics.menu.GadgetManager;
 import be.isach.ultracosmetics.util.*;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -32,157 +27,152 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 
 /**
- * Package: be.isach.ultracosmetics.cosmetics.gadgets
- * Created by: sacha
- * Date: 03/08/15
- * Project: UltraCosmetics
- * <p>
- * Represents an instance of a Gadget summoned by a player.
+ * Created by sacha on 03/08/15.
  */
-public abstract class Gadget extends Cosmetic<GadgetType> implements Updatable {
-
-    private static final DecimalFormatSymbols OTHER_SYMBOLS = new DecimalFormatSymbols(Locale.US);
-    private static final DecimalFormat DECIMAL_FORMAT;
-
-    static {
-        OTHER_SYMBOLS.setDecimalSeparator('.');
-        OTHER_SYMBOLS.setGroupingSeparator('.');
-        OTHER_SYMBOLS.setPatternSeparator('.');
-        DECIMAL_FORMAT = new DecimalFormat("0.0", OTHER_SYMBOLS);
-    }
-
-
+public abstract class Gadget implements Listener {
 
     /**
      * If true, it will differentiate left and right click.
      */
-    boolean useTwoInteractMethods;
-
+    public boolean useTwoInteractMethods;
     /**
      * If it should open Gadget Menu after purchase.
      */
     public boolean openGadgetsInvAfterAmmo;
-
     /**
      * If true, will display cooldown left when fail on use
      * because cooldown active.
      */
-    boolean displayCooldownMessage = true;
+    public boolean displayCooldownMessage = true;
 
+    public int lastPage = 1;
     /**
      * Last Clicked Block by the player.
      */
-    Block lastClickedBlock;
-
+    protected Block lastClickedBlock;
     /**
      * Gadget ItemStack.
      */
     protected ItemStack itemStack;
-
     /**
-     * If Gadget interaction should tick asynchronously.
+     * If Gadget interaction should run asynchronously.
      */
-    boolean asynchronous = false;
-
+    protected boolean asyncAction = false;
     /**
      * If true, it will affect players (velocity).
      */
     boolean affectPlayers;
-
     /**
      * The Ammo Purchase inventory.
      */
-    private Inventory ammoInventory;
-
+    private Inventory inv;
     /**
-     * Page the user was on when trying to buy ammo.
-     * Is used when player buys ammo from Gadget Menu.
+     * Event listener.
      */
-    public int lastPage = 1;
+    private Listener listener;
+    /**
+     * Type of the Gadget.
+     */
+    private GadgetType type;
+    /**
+     * Required permission.
+     */
+    private String permission;
+    /**
+     * Owner's UUID.
+     */
+    private UUID owner;
 
-    public Gadget(UltraPlayer owner, GadgetType type, UltraCosmetics ultraCosmetics) {
-        super(ultraCosmetics, Category.GADGETS, owner, type);
-
+    public Gadget(final UUID owner, final GadgetType type) {
+        this.permission = type.getPermission();
+        this.type = type;
         this.affectPlayers = type.affectPlayers();
+        if (!type.isEnabled())
+            return;
+
         this.useTwoInteractMethods = false;
-    }
-
-    @Override
-    protected void onEquip() {
-        if (getUltraCosmetics().getPlayerManager().getUltraPlayer(getPlayer()).getCurrentGadget() != null) {
-            getUltraCosmetics().getPlayerManager().getUltraPlayer(getPlayer()).removeGadget();
-        }
-
-        runTaskTimerAsynchronously(getUltraCosmetics(), 0, 1);
-
-        if (getPlayer().getInventory().getItem(ConfigUtils.getGadgetSlot()) != null) {
-            getPlayer().getWorld().dropItem(getPlayer().getLocation(), getPlayer().getInventory().getItem(ConfigUtils.getGadgetSlot()));
-            getPlayer().getInventory().remove(ConfigUtils.getGadgetSlot());
-        }
-
-        String ammo = "";
-        if (UltraCosmeticsData.get().isAmmoEnabled() && getType().requiresAmmo()) {
-            ammo = "§f§l" + getOwner().getAmmo(getType().toString().toLowerCase()) + " ";
-        }
-
-        itemStack = ItemFactory.create(getType().getMaterial(), getType().getData(), ammo + getType().getName(), MessageManager.getMessage("Gadgets.Lore"));
-        getPlayer().getInventory().setItem((int) SettingsManager.getConfig().get("Gadget-Slot"), itemStack);
-
-        getUltraCosmetics().getPlayerManager().getUltraPlayer(getPlayer()).setCurrentGadget(this);
-    }
-
-    @Override
-    public void run() {
-        try {
-            if (getOwner().getCurrentGadget() != null &&
-                    getOwner().getCurrentGadget().getType() == getType()) {
-                onUpdate();
-                if (UltraCosmeticsData.get().displaysCooldownInBar()) {
-                    if (getPlayer().getItemInHand() != null
-                            && itemStack != null
-                            && itemStack.equals(getPlayer().getItemInHand())
-                            && getUltraCosmetics().getPlayerManager().getUltraPlayer(getPlayer()).canUse(getType()) != -1) {
-                        sendCooldownBar();
-                    }
-                    double left = getUltraCosmetics().getPlayerManager().getUltraPlayer(getPlayer()).canUse(getType());
-                    if (left > -0.1) {
-                        String leftRounded = DECIMAL_FORMAT.format(left);
-                        double decimalRoundedValue = Double.parseDouble(leftRounded);
-                        if (decimalRoundedValue == 0) {
-                            String message = MessageManager.getMessage("Gadgets.Gadget-Ready-ActionBar");
-                            message = message.replace("%gadgetname%", TextUtil.filterPlaceHolder(getType().getName(), getUltraCosmetics()));
-                            PlayerUtils.sendInActionBar(getPlayer(), message);
-                            SoundUtil.playSound(getPlayer(), Sounds.NOTE_STICKS, 1.4f, 1.5f);
+        if (owner != null) {
+            this.owner = owner;
+            if (UltraCosmetics.getCustomPlayer(getPlayer()).currentGadget != null)
+                UltraCosmetics.getCustomPlayer(getPlayer()).removeGadget();
+            if (!getPlayer().hasPermission(permission)) {
+                getPlayer().sendMessage(MessageManager.getMessage("No-Permission"));
+                return;
+            }
+            DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
+            otherSymbols.setDecimalSeparator('.');
+            otherSymbols.setGroupingSeparator('.');
+            otherSymbols.setPatternSeparator('.');
+            final DecimalFormat decimalFormat = new DecimalFormat("0.0", otherSymbols);
+            BukkitRunnable runnable = new BukkitRunnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (Bukkit.getPlayer(owner) != null
+                                && UltraCosmetics.getCustomPlayer(Bukkit.getPlayer(owner)).currentGadget != null
+                                && UltraCosmetics.getCustomPlayer(Bukkit.getPlayer(owner)).currentGadget.getType() == type) {
+                            onUpdate();
+                            if (UltraCosmetics.cooldownInBar) {
+                                if (getPlayer().getItemInHand() != null
+                                        && itemStack != null
+                                        && getPlayer().getItemInHand().hasItemMeta()
+                                        && getPlayer().getItemInHand().getItemMeta().hasDisplayName()
+                                        && getPlayer().getItemInHand().getItemMeta().getDisplayName().contains(getType().getName())
+                                        && UltraCosmetics.getCustomPlayer(getPlayer()).canUse(type) != -1)
+                                    sendCooldownBar();
+                                double left = UltraCosmetics.getCustomPlayer(getPlayer()).canUse(type);
+                                if (left > -0.1) {
+                                    String leftRounded = decimalFormat.format(left);
+                                    double decimalRoundedValue = Double.parseDouble(leftRounded);
+                                    if (decimalRoundedValue == 0) {
+                                        PlayerUtils.sendInActionBar(getPlayer(),
+                                                MessageManager.getMessage("Gadgets.Gadget-Ready-ActionBar").
+                                                        replace("%gadgetname%", (UltraCosmetics.getInstance().placeholdersHaveColor()) ?
+                                                                getName() : UltraCosmetics.filterColor(getName())));
+                                        SoundUtil.playSound(getPlayer(), Sounds.NOTE_STICKS, 1.4f, 1.5f);
+                                    }
+                                }
+                            }
+                        } else {
+                            cancel();
+                            unregisterListeners();
                         }
+                    } catch (NullPointerException exc) {
+                        removeItem();
+                        onClear();
+                        removeListener();
+                        getPlayer().sendMessage(MessageManager.getMessage("Gadgets.Unequip").replace("%gadgetname%", (UltraCosmetics.getInstance().placeholdersHaveColor()) ? getName() : UltraCosmetics.filterColor(getName())));
+                        cancel();
                     }
                 }
-            } else {
-                clear();
+            };
+            runnable.runTaskTimerAsynchronously(UltraCosmetics.getInstance(), 0, 1);
+            listener = new GadgetListener(this);
+            UltraCosmetics.getInstance().registerListener(listener);
+            UltraCosmetics.getInstance().registerListener(this);
+            if (getPlayer().getInventory().getItem((int) SettingsManager.getConfig().get("Gadget-Slot")) != null) {
+                getPlayer().getWorld().dropItem(getPlayer().getLocation(), getPlayer().getInventory().getItem((int) SettingsManager.getConfig().get("Gadget-Slot")));
+                getPlayer().getInventory().remove((int) SettingsManager.getConfig().get("Gadget-Slot"));
             }
-        } catch (NullPointerException exc) {
-            clear();
+            String d = UltraCosmetics.getInstance().isAmmoEnabled() && getType().requiresAmmo() ?
+                    "§f§l" + UltraCosmetics.getCustomPlayer(getPlayer()).getAmmo(type.toString().toLowerCase()) + " "
+                    : "";
+            itemStack = ItemFactory.create(type.getMaterial(), type.getData(), d + getName(), MessageManager.getMessage("Gadgets.Lore"));
+            getPlayer().getInventory().setItem((int) SettingsManager.getConfig().get("Gadget-Slot"), itemStack);
+            getPlayer().sendMessage(MessageManager.getMessage("Gadgets.Equip").replace("%gadgetname%", (UltraCosmetics.getInstance().placeholdersHaveColor()) ? getName() : UltraCosmetics.filterColor(getName())));
+            UltraCosmetics.getCustomPlayer(getPlayer()).currentGadget = this;
         }
-    }
-
-    @Override
-    public void clear() {
-        super.clear();
-
-        removeItem();
-        cancel();
     }
 
     /**
-     * unregister listeners.
+     * Unregister Listener.
      */
-    public void unregisterListeners() {
-        try {
-            HandlerList.unregisterAll(this);
-        } catch (Exception exc) {
-        }
+    public void removeListener() {
+        HandlerList.unregisterAll(this);
     }
 
     /**
@@ -193,16 +183,15 @@ public abstract class Gadget extends Cosmetic<GadgetType> implements Updatable {
 
         StringBuilder stringBuilder = new StringBuilder();
 
-        double currentCooldown = getUltraCosmetics().getPlayerManager().getUltraPlayer(getPlayer()).canUse(getType());
-        double maxCooldown = getType().getCountdown();
+        double currentCooldown = UltraCosmetics.getCustomPlayer(getPlayer()).canUse(type);
+        double maxCooldown = type.getCountdown();
 
         int res = (int) (currentCooldown / maxCooldown * 10);
         ChatColor color;
         for (int i = 0; i < 10; i++) {
             color = ChatColor.RED;
-            if (i < 10 - res) {
+            if (i < 10 - res)
                 color = ChatColor.GREEN;
-            }
             stringBuilder.append(color + "█");
         }
 
@@ -214,8 +203,24 @@ public abstract class Gadget extends Cosmetic<GadgetType> implements Updatable {
         String timeLeft = decimalFormat.format(currentCooldown) + "s";
 
         PlayerUtils.sendInActionBar(getPlayer(),
-                getType().getName() + " §f" + stringBuilder.toString() + " §f" + timeLeft);
+                getName() + " §f" + stringBuilder.toString() + " §f" + timeLeft);
 
+    }
+
+    public String getName() {
+        return type.getName();
+    }
+
+    public Material getMaterial() {
+        return type.getMaterial();
+    }
+
+    public GadgetType getType() {
+        return type;
+    }
+
+    public Byte getData() {
+        return type.getData();
     }
 
     /**
@@ -234,9 +239,43 @@ public abstract class Gadget extends Cosmetic<GadgetType> implements Updatable {
     abstract void onLeftClick();
 
     /**
+     * Called on each tick.
+     */
+    abstract void onUpdate();
+
+    /**
      * Called when gadget is cleared.
      */
     public abstract void onClear();
+
+    /**
+     * unregister listeners.
+     */
+    public void unregisterListeners() {
+        try {
+            HandlerList.unregisterAll(this);
+            HandlerList.unregisterAll(listener);
+        } catch (Exception exc) {
+        }
+    }
+
+    /**
+     * Gets the owner as a UUID.
+     *
+     * @return the owner as a UUID.
+     */
+    protected UUID getOwner() {
+        return owner;
+    }
+
+    /**
+     * Gets the owner as a player.
+     *
+     * @return the owner as a player.
+     */
+    protected Player getPlayer() {
+        return Bukkit.getPlayer(owner);
+    }
 
     /**
      * Removes the item.
@@ -251,8 +290,8 @@ public abstract class Gadget extends Cosmetic<GadgetType> implements Updatable {
      *
      * @return the price for each ammo purchase.
      */
-    private int getPrice() {
-        return SettingsManager.getConfig().getInt("Gadgets." + getType().getConfigName() + ".Ammo.Price");
+    public int getPrice() {
+        return (int) SettingsManager.getConfig().get("Gadgets." + type.getConfigName() + ".Ammo.Price");
     }
 
     /**
@@ -260,8 +299,8 @@ public abstract class Gadget extends Cosmetic<GadgetType> implements Updatable {
      *
      * @return the ammo it should give after a purchase.
      */
-    private int getResultAmmoAmount() {
-        return SettingsManager.getConfig().getInt("Gadgets." + getType().getConfigName() + ".Ammo.Result-Amount");
+    public int getResultAmmoAmount() {
+        return (int) SettingsManager.getConfig().get("Gadgets." + type.getConfigName() + ".Ammo.Result-Amount");
     }
 
     /**
@@ -280,7 +319,7 @@ public abstract class Gadget extends Cosmetic<GadgetType> implements Updatable {
 
         Inventory inventory = Bukkit.createInventory(null, 54, MessageManager.getMessage("Menus.Buy-Ammo"));
 
-        inventory.setItem(13, ItemFactory.create(getType().getMaterial(), getType().getData(), MessageManager.getMessage("Buy-Ammo-Description").replace("%amount%", "" + getResultAmmoAmount()).replace("%price%", "" + getPrice()).replaceAll("%gadgetname%", getType().getName())));
+        inventory.setItem(13, ItemFactory.create(type.getMaterial(), type.getData(), MessageManager.getMessage("Buy-Ammo-Description").replace("%amount%", "" + getResultAmmoAmount()).replace("%price%", "" + getPrice()).replaceAll("%gadgetname%", getName())));
 
         for (int i = 27; i < 30; i++) {
             inventory.setItem(i, ItemFactory.create(Material.EMERALD_BLOCK, (byte) 0x0, MessageManager.getMessage("Purchase")));
@@ -295,179 +334,268 @@ public abstract class Gadget extends Cosmetic<GadgetType> implements Updatable {
 
         getPlayer().openInventory(inventory);
 
-        this.ammoInventory = inventory;
-    }
-
-    protected boolean checkRequirements(PlayerInteractEvent event) {
-        return true;
-    }
-
-    @EventHandler
-    public void onInventoryClose(InventoryCloseEvent event) {
-        if (event.getPlayer() == getPlayer() && ammoInventory != null && InventoryUtils.areSame(event.getInventory(), ammoInventory)) {
-            ammoInventory = null;
-            openGadgetsInvAfterAmmo = false;
-        }
-    }
-
-    @EventHandler
-    public void onInventoryClickAmmo(final InventoryClickEvent event) {
-        if (event.getWhoClicked() == getPlayer() && ammoInventory != null && InventoryUtils.areSame(event.getWhoClicked().getOpenInventory().getTopInventory(), ammoInventory)) {
-            event.setCancelled(true);
-            if (event.getCurrentItem() != null && event.getCurrentItem().hasItemMeta() && event.getCurrentItem().getItemMeta().hasDisplayName()) {
-                String displayName = event.getCurrentItem().getItemMeta().getDisplayName();
-                String purchase = MessageManager.getMessage("Purchase");
-                String cancel = MessageManager.getMessage("Cancel");
-                if (displayName.equals(purchase)) {
-                    if (getUltraCosmetics().getPlayerManager().getUltraPlayer((Player) event.getWhoClicked()).getBalance() >= getPrice()) {
-                        getUltraCosmetics().getEconomy().withdrawPlayer((Player) event.getWhoClicked(), getPrice());
-                        getUltraCosmetics().getPlayerManager().getUltraPlayer((Player) event.getWhoClicked()).addAmmo(getType().toString().toLowerCase(), getResultAmmoAmount());
-                        event.getWhoClicked().sendMessage(MessageManager.getMessage("Successful-Purchase"));
-                        if (openGadgetsInvAfterAmmo)
-                            Bukkit.getScheduler().runTaskLater(getUltraCosmetics(), () -> {
-                                getUltraCosmetics().getMenus().getGadgetsMenu().open(getOwner(), lastPage);
-                                openGadgetsInvAfterAmmo = false;
-                                lastPage = 1;
-                            }, 1);
-                    } else {
-                        getPlayer().sendMessage(MessageManager.getMessage("Not-Enough-Money"));
-                    }
-                    event.getWhoClicked().closeInventory();
-                } else if (displayName.equals(cancel)) {
-                    event.getWhoClicked().closeInventory();
-                }
-            }
-        }
-    }
-
-    @EventHandler
-    public void onPlayerInteract(final PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        UUID uuid = player.getUniqueId();
-        UltraPlayer ultraPlayer = getUltraCosmetics().getPlayerManager().getUltraPlayer(event.getPlayer());
-        if (!uuid.equals(getOwnerUniqueId())) return;
-        ItemStack itemStack = player.getItemInHand();
-        if (itemStack.getType() != getType().getMaterial()) return;
-        if (itemStack.getData().getData() != getType().getData()) return;
-        if (player.getInventory().getHeldItemSlot() != (int) SettingsManager.getConfig().get("Gadget-Slot")) return;
-        if (ultraPlayer != getOwner()) return;
-        if (event.getAction() == Action.PHYSICAL) return;
-        event.setCancelled(true);
-        player.updateInventory();
-        if (!ultraPlayer.hasGadgetsEnabled()) {
-            getPlayer().sendMessage(MessageManager.getMessage("Gadgets-Enabled-Needed"));
-            return;
-        }
-        if (ultraPlayer.getCurrentTreasureChest() != null) {
-            return;
-        }
-
-        if (UltraCosmeticsData.get().isAmmoEnabled() && getType().requiresAmmo()) {
-            if (ultraPlayer.getAmmo(getType().toString().toLowerCase()) < 1) {
-                openAmmoPurchaseMenu();
-                return;
-            }
-        }
-        if (!checkRequirements(event)) {
-            return;
-        }
-        double coolDown = ultraPlayer.canUse(getType());
-        if (coolDown != -1) {
-            String timeLeft = new DecimalFormat("#.#").format(coolDown);
-            if (getType().getCountdown() > 1)
-                getPlayer().sendMessage(MessageManager.getMessage("Gadgets.Countdown-Message").replace("%gadgetname%", TextUtil.filterPlaceHolder(getType().getName(), getUltraCosmetics())).replace("%time%", timeLeft));
-            return;
-        } else {
-            ultraPlayer.setCoolDown(getType(), getType().getCountdown());
-        }
-        if (UltraCosmeticsData.get().isAmmoEnabled() && getType().requiresAmmo()) {
-            ultraPlayer.removeAmmo(getType().toString().toLowerCase());
-            itemStack = ItemFactory.create(getType().getMaterial(), getType().getData(), "§f§l" + ultraPlayer.getAmmo(getType().toString().toLowerCase()) + " " + getType().getName(), MessageManager.getMessage("Gadgets.Lore"));
-            getPlayer().getInventory().setItem((int) SettingsManager.getConfig().get("Gadget-Slot"), getItemStack());
-        }
-        if (event.getClickedBlock() != null
-                && event.getClickedBlock().getType() != Material.AIR)
-            lastClickedBlock = event.getClickedBlock();
-        if (asynchronous) {
-            Bukkit.getScheduler().runTaskAsynchronously(getUltraCosmetics(), new BukkitRunnable() {
-                @Override
-                public void run() {
-                    if (useTwoInteractMethods) {
-                        if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)
-                            onRightClick();
-                        else if (event.getAction() == Action.LEFT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_AIR)
-                            onLeftClick();
-                    } else {
-                        onRightClick();
-                    }
-                }
-            });
-        } else {
-            if (useTwoInteractMethods) {
-                if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)
-                    onRightClick();
-                else if (event.getAction() == Action.LEFT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_AIR)
-                    onLeftClick();
-            } else {
-                onRightClick();
-            }
-        }
-
-    }
-
-    @EventHandler
-    public void onItemDrop(PlayerDropItemEvent event) {
-        if (event.getItemDrop().getItemStack().equals(getItemStack())) {
-            if (SettingsManager.getConfig().getBoolean("Remove-Gadget-With-Drop")) {
-                getUltraCosmetics().getPlayerManager().getUltraPlayer(getPlayer()).removeGadget();
-                event.getItemDrop().remove();
-            } else {
-                event.setCancelled(true);
-            }
-        }
+        this.inv = inventory;
     }
 
     /**
-     * Cancel players from removing, picking the item in their inventory.
-     *
-     * @param event
+     * Event Listener.
      */
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void cancelMove(InventoryClickEvent event) {
-        Player player = (Player) event.getWhoClicked();
-        if (player == getPlayer()
-                && ((event.getCurrentItem() != null && event.getCurrentItem().equals(getItemStack())))
-                || ((event.getCursor() != null && event.getCursor().equals(getItemStack())))) {
-            if (event.getClick() == ClickType.SHIFT_LEFT || event.getClick() == ClickType.SHIFT_RIGHT
-                    || event.getClick() == ClickType.NUMBER_KEY || event.getClick() == ClickType.UNKNOWN) {
-                event.setCancelled(true);
-                player.updateInventory();
+    public class GadgetListener implements Listener {
+        private Gadget gadget;
+
+        public GadgetListener(Gadget gadget) {
+            this.gadget = gadget;
+        }
+
+        @EventHandler
+        public void onInventoryClose(InventoryCloseEvent event) {
+            if (event.getPlayer() == getPlayer() && inv != null && isSameInventory(event.getInventory(), inv)) {
+                inv = null;
+                openGadgetsInvAfterAmmo = false;
                 return;
             }
-            if (event.getCurrentItem() != null) {
-                if (event.getCurrentItem().equals(itemStack)) {
+        }
+
+        @EventHandler
+        public void onInventoryClickAmmo(final InventoryClickEvent event) {
+            if (event.getWhoClicked() == getPlayer() && inv != null && isSameInventory(event.getWhoClicked().getOpenInventory().getTopInventory(), inv)) {
+                event.setCancelled(true);
+                if (event.getCurrentItem() != null && event.getCurrentItem().hasItemMeta() && event.getCurrentItem().getItemMeta().hasDisplayName()) {
+                    String displayName = event.getCurrentItem().getItemMeta().getDisplayName();
+                    String purchase = MessageManager.getMessage("Purchase");
+                    String cancel = MessageManager.getMessage("Cancel");
+                    if (displayName.equals(purchase)) {
+                        if (UltraCosmetics.getCustomPlayer((Player) event.getWhoClicked()).getBalance() >= getPrice()) {
+                            UltraCosmetics.economy.withdrawPlayer((Player) event.getWhoClicked(), getPrice());
+                            UltraCosmetics.getCustomPlayer((Player) event.getWhoClicked()).addAmmo(type.toString().toLowerCase(), getResultAmmoAmount());
+                            event.getWhoClicked().sendMessage(MessageManager.getMessage("Successful-Purchase"));
+                            if (openGadgetsInvAfterAmmo)
+                                Bukkit.getScheduler().runTaskLater(UltraCosmetics.getInstance(), new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        GadgetManager.openMenu((Player) event.getWhoClicked(), lastPage);
+                                        openGadgetsInvAfterAmmo = false;
+                                        lastPage = 1;
+                                    }
+                                }, 1);
+                        } else {
+                            getPlayer().sendMessage(MessageManager.getMessage("Not-Enough-Money"));
+                        }
+                        event.getWhoClicked().closeInventory();
+                    } else if (displayName.equals(cancel)) {
+                        event.getWhoClicked().closeInventory();
+                    }
+                }
+            }
+        }
+
+        public boolean isSameInventory(Inventory first, Inventory second) {
+            return UltraCosmetics.getInstance().getEntityUtil().isSameInventory(first, second);
+        }
+
+        @EventHandler
+        protected void onPlayerInteract(final PlayerInteractEvent EVENT) {
+            Player player = EVENT.getPlayer();
+            UUID uuid = player.getUniqueId();
+            UltraPlayer cp = UltraCosmetics.getCustomPlayer(getPlayer());
+            if (!uuid.equals(gadget.owner)) return;
+            ItemStack itemStack = player.getItemInHand();
+            if (itemStack.getType() != gadget.getMaterial()) return;
+            if (itemStack.getData().getData() != gadget.getData()) return;
+            if (player.getInventory().getHeldItemSlot() != (int) SettingsManager.getConfig().get("Gadget-Slot")) return;
+            if (UltraCosmetics.getCustomPlayer(getPlayer()).currentGadget != gadget) return;
+            if (EVENT.getAction() == Action.PHYSICAL) return;
+            EVENT.setCancelled(true);
+            player.updateInventory();
+            if (!UltraCosmetics.getCustomPlayer(getPlayer()).hasGadgetsEnabled()) {
+                getPlayer().sendMessage(MessageManager.getMessage("Gadgets-Enabled-Needed"));
+                return;
+            }
+            if (UltraCosmetics.getCustomPlayer(getPlayer()).currentTreasureChest != null)
+                return;
+
+            if (UltraCosmetics.getInstance().isAmmoEnabled() && getType().requiresAmmo()) {
+                if (UltraCosmetics.getCustomPlayer(getPlayer()).getAmmo(getType().toString().toLowerCase()) < 1) {
+                    openAmmoPurchaseMenu();
+                    return;
+                }
+            }
+            if (type == GadgetType.PORTALGUN) {
+                if (getPlayer().getTargetBlock((Set<Material>) null, 20).getType() == Material.AIR) {
+                    getPlayer().sendMessage(MessageManager.getMessage("Gadgets.PortalGun.No-Block-Range"));
+                    return;
+                }
+            }
+            if (type == GadgetType.ROCKET) {
+                boolean pathClear = true;
+                Cuboid c = new Cuboid(getPlayer().getLocation().add(-1, 0, -1), getPlayer().getLocation().add(1, 75, 1));
+                if (!c.isEmpty()) {
+                    getPlayer().sendMessage(MessageManager.getMessage("Gadgets.Rocket.Not-Enough-Space"));
+                    return;
+                }
+                if (!getPlayer().isOnGround()) {
+                    getPlayer().sendMessage(MessageManager.getMessage("Gadgets.Rocket.Not-On-Ground"));
+                    return;
+                }
+            }
+            if (type == GadgetType.DISCOBALL) {
+                if (UltraCosmetics.getInstance().discoBalls.size() > 0) {
+                    getPlayer().sendMessage(MessageManager.getMessage("Gadgets.DiscoBall.Already-Active"));
+                    return;
+                }
+                if (getPlayer().getLocation().add(0, 4, 0).getBlock() != null && getPlayer().getLocation().add(0, 4, 0).getBlock().getType() != Material.AIR) {
+                    getPlayer().sendMessage(MessageManager.getMessage("Gadgets.DiscoBall.Not-Space-Above"));
+                    return;
+                }
+            }
+            if (type == GadgetType.CHRISTMASTREE) {
+                if (EVENT.getClickedBlock() == null
+                        || EVENT.getClickedBlock().getType() == Material.AIR) {
+                    getPlayer().sendMessage(MessageManager.getMessage("Gadgets.ChristmasTree.Click-On-Block"));
+                    return;
+                }
+            }
+            if (type == GadgetType.TRAMPOLINE) {
+                // Check blocks above.
+                Location loc1 = getPlayer().getLocation().add(2, 15, 2);
+                Location loc2 = getPlayer().getLocation().clone().add(-2, 0, -2);
+                Block block = loc1.getBlock().getRelative(3, 0, 0);
+                Block block2 = loc1.getBlock().getRelative(3, 1, 0);
+                Cuboid checkCuboid = new Cuboid(loc1, loc2);
+
+                if (!checkCuboid.isEmpty()
+                        || block.getType() != Material.AIR
+                        || block2.getType() != Material.AIR) {
+                    getPlayer().sendMessage(MessageManager.getMessage("Gadgets.Rocket.Not-Enough-Space"));
+                    return;
+                }
+            }
+            // Check for the parachute if there is space 30-40 blocks above the player to avoid problems.
+            if (type == GadgetType.PARACHUTE) {
+                // Check blocks above.
+                Location loc1 = getPlayer().getLocation().add(2, 28, 2);
+                Location loc2 = getPlayer().getLocation().clone().add(-2, 40, -2);
+                Cuboid checkCuboid = new Cuboid(loc1, loc2);
+
+                if (!checkCuboid.isEmpty()) {
+                    getPlayer().sendMessage(MessageManager.getMessage("Gadgets.Rocket.Not-Enough-Space"));
+                    return;
+                }
+            }
+            if (type == GadgetType.EXPLOSIVESHEEP) {
+                if (UltraCosmetics.getInstance().explosiveSheep.size() > 0) {
+                    getPlayer().sendMessage(MessageManager.getMessage("Gadgets.ExplosiveSheep.Already-Active"));
+                    return;
+                }
+            }
+            double coolDown = cp.canUse(getType());
+            if (coolDown != -1) {
+                String timeLeft = new DecimalFormat("#.#").format(coolDown);
+                if (type.getCountdown() > 1)
+                    getPlayer().sendMessage(MessageManager.getMessage("Gadgets.Countdown-Message").replace("%gadgetname%", (UltraCosmetics.getInstance().placeholdersHaveColor()) ? getName() : UltraCosmetics.filterColor(getName())).replace("%time%", timeLeft));
+                return;
+            } else
+                cp.setCoolDown(getType(), type.getCountdown());
+            if (UltraCosmetics.getInstance().isAmmoEnabled() && getType().requiresAmmo()) {
+                UltraCosmetics.getCustomPlayer(getPlayer()).removeAmmo(getType().toString().toLowerCase());
+                itemStack = ItemFactory.create(type.getMaterial(), type.getData(), "§f§l" + UltraCosmetics.getCustomPlayer(getPlayer()).getAmmo(type.toString().toLowerCase()) + " " + getName(), MessageManager.getMessage("Gadgets.Lore"));
+                getPlayer().getInventory().setItem((int) SettingsManager.getConfig().get("Gadget-Slot"), itemStack);
+            }
+            if (EVENT.getClickedBlock() != null
+                    && EVENT.getClickedBlock().getType() != Material.AIR)
+                lastClickedBlock = EVENT.getClickedBlock();
+            if (asyncAction) {
+                Bukkit.getScheduler().runTaskAsynchronously(UltraCosmetics.getInstance(), new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        if (useTwoInteractMethods) {
+                            if (EVENT.getAction() == Action.RIGHT_CLICK_AIR
+                                    || EVENT.getAction() == Action.RIGHT_CLICK_BLOCK)
+                                onRightClick();
+                            else if (EVENT.getAction() == Action.LEFT_CLICK_BLOCK
+                                    || EVENT.getAction() == Action.LEFT_CLICK_AIR)
+                                onLeftClick();
+                        } else {
+                            onRightClick();
+                        }
+                    }
+                });
+            } else {
+                if (useTwoInteractMethods) {
+                    if (EVENT.getAction() == Action.RIGHT_CLICK_AIR
+                            || EVENT.getAction() == Action.RIGHT_CLICK_BLOCK)
+                        onRightClick();
+                    else if (EVENT.getAction() == Action.LEFT_CLICK_BLOCK
+                            || EVENT.getAction() == Action.LEFT_CLICK_AIR)
+                        onLeftClick();
+                } else {
+                    onRightClick();
+                }
+            }
+
+        }
+
+        @EventHandler
+        protected void onItemDrop(PlayerDropItemEvent event) {
+            if (event.getItemDrop().getItemStack().getType() == type.getMaterial()) {
+                if (event.getItemDrop().getItemStack().getData().getData() == type.getData()) {
+                    if (event.getItemDrop().getItemStack().getItemMeta().hasDisplayName()) {
+                        if (event.getItemDrop().getItemStack().getItemMeta().getDisplayName().endsWith(getName())) {
+                            if (SettingsManager.getConfig().getBoolean("Remove-Gadget-With-Drop")) {
+                                UltraCosmetics.getCustomPlayer(getPlayer()).removeGadget();
+                                event.getItemDrop().remove();
+                                return;
+                            }
+                            event.setCancelled(true);
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Cancel players from removing, picking the item in their inventory.
+         *
+         * @param event
+         */
+        @EventHandler(priority = EventPriority.LOWEST)
+        public void cancelMove(InventoryClickEvent event) {
+            Player player = (Player) event.getWhoClicked();
+            if (player == getPlayer()
+                    && ((event.getCurrentItem() != null && event.getCurrentItem().equals(gadget.getItemStack())))
+                    || ((event.getCursor() != null && event.getCursor().equals(gadget.getItemStack())))) {
+                if (event.getClick() == ClickType.SHIFT_LEFT || event.getClick() == ClickType.SHIFT_RIGHT
+                        || event.getClick() == ClickType.NUMBER_KEY || event.getClick() == ClickType.UNKNOWN) {
                     event.setCancelled(true);
                     player.updateInventory();
+                    return;
+                }
+                if (event.getCurrentItem() != null) {
+                    if (event.getCurrentItem().equals(itemStack)) {
+                        event.setCancelled(true);
+                        player.updateInventory();
+                        return;
+                    }
                 }
             }
         }
-    }
 
-    /**
-     * Cancel players from removing, picking the item in their inventory.
-     *
-     * @param event
-     */
-    @EventHandler
-    public void cancelMove(InventoryDragEvent event) {
-        Player player = (Player) event.getWhoClicked();
-        for (ItemStack item : event.getNewItems().values()) {
-            if (item != null
-                    && player == getPlayer()
-                    && item.equals(itemStack)) {
-                event.setCancelled(true);
-                ((Player) event.getWhoClicked()).updateInventory();
-                return;
+        /**
+         * Cancel players from removing, picking the item in their inventory.
+         *
+         * @param event
+         */
+        @EventHandler
+        public void cancelMove(InventoryDragEvent event) {
+            Player player = (Player) event.getWhoClicked();
+            for (ItemStack item : event.getNewItems().values()) {
+                if (item != null
+                        && player == getPlayer()
+                        && item.equals(itemStack)) {
+                    event.setCancelled(true);
+                    ((Player) event.getWhoClicked()).updateInventory();
+                    return;
+                }
             }
         }
     }

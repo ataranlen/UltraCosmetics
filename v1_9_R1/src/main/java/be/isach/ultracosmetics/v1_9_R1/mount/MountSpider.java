@@ -1,8 +1,7 @@
 package be.isach.ultracosmetics.v1_9_R1.mount;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.cosmetics.type.MountType;
-import be.isach.ultracosmetics.player.UltraPlayer;
+import be.isach.ultracosmetics.cosmetics.mounts.MountType;
 
 import java.util.UUID;
 
@@ -10,12 +9,11 @@ import java.util.UUID;
  * Created by Sacha on 18/10/15.
  */
 public class MountSpider extends MountCustomEntity {
-    public MountSpider(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
+    public MountSpider(UUID owner, UltraCosmetics ultraCosmetics) {
         super(owner, MountType.SPIDER, ultraCosmetics);
     }
 
     @Override
-    public void onUpdate() {
+    protected void onUpdate() {
     }
-
 }

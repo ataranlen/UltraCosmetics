@@ -1,5 +1,8 @@
 package be.isach.ultracosmetics.cosmetics.emotes;
 
+import be.isach.ultracosmetics.UltraCosmetics;
+import be.isach.ultracosmetics.util.ItemFactory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
@@ -36,7 +39,11 @@ class EmoteAnimation extends BukkitRunnable {
 
     void start() {
         this.running = true;
-        runTaskTimer(emote.getUltraCosmetics(), 0, ticksPerFrame);
+        runTaskTimer(UltraCosmetics.getInstance(), 0, ticksPerFrame);
+    }
+
+    public void pause() {
+        this.running = !running;
     }
 
     void stop() {
@@ -47,11 +54,11 @@ class EmoteAnimation extends BukkitRunnable {
     private void updateTexture() {
         if (!running) return;
 
-        emote.getPlayer().getInventory().setHelmet(emote.getType().getFrames().get(currentFrame));
-        emote.setItemStack(emote.getType().getFrames().get(currentFrame));
+        emote.getPlayer().getInventory().setHelmet(getType().getFrames().get(currentFrame));
+        emote.setItemStack(getType().getFrames().get(currentFrame));
 
         if (up) {
-            if (currentFrame >= emote.getType().getMaxFrames() - 1) {
+            if (currentFrame >= getType().getMaxFrames() - 1) {
                 up = false;
             } else {
                 currentFrame++;
@@ -68,5 +75,9 @@ class EmoteAnimation extends BukkitRunnable {
                 currentFrame--;
             }
         }
+    }
+
+    private EmoteType getType() {
+        return emote.getEmoteType();
     }
 }

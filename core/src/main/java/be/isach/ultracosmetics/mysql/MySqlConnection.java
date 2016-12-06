@@ -3,7 +3,7 @@ package be.isach.ultracosmetics.mysql;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
-public class MySqlConnection {
+public class MySQLConnection {
 
     private final String hostname;
 
@@ -15,7 +15,7 @@ public class MySqlConnection {
 
     private final String password;
 
-    public MySqlConnection(String hostname, String portNumber, String database, String username, String password) {
+    public MySQLConnection(String hostname, String portNumber, String database, String username, String password) {
         this.hostname = hostname;
 
         this.portNumber = portNumber;

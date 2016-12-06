@@ -1,9 +1,8 @@
 package be.isach.ultracosmetics.cosmetics.gadgets;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.player.UltraPlayer;
-import be.isach.ultracosmetics.cosmetics.type.GadgetType;
 import be.isach.ultracosmetics.util.*;
+import org.bukkit.Sound;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -18,6 +17,7 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by sacha on 17/08/15.
@@ -26,8 +26,9 @@ public class GadgetTNT extends Gadget {
 
     List<Entity> entities = new ArrayList<>();
 
-    public GadgetTNT(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(owner, GadgetType.TNT, ultraCosmetics);
+    public GadgetTNT(UUID owner) {
+        super(owner, GadgetType.TNT);
+        UltraCosmetics.getInstance().registerListener(this);
     }
 
     @Override
@@ -99,7 +100,7 @@ public class GadgetTNT extends Gadget {
     }
 
     @Override
-    public void onUpdate() {
+    void onUpdate() {
 
     }
 

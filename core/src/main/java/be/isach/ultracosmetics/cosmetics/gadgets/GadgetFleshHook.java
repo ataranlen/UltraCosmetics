@@ -1,8 +1,6 @@
 package be.isach.ultracosmetics.cosmetics.gadgets;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.player.UltraPlayer;
-import be.isach.ultracosmetics.cosmetics.type.GadgetType;
 import be.isach.ultracosmetics.util.ItemFactory;
 import be.isach.ultracosmetics.util.MathUtils;
 import org.bukkit.EntityEffect;
@@ -25,8 +23,9 @@ public class GadgetFleshHook extends Gadget implements Listener {
 
     private ArrayList<Item> items = new ArrayList<>();
 
-    public GadgetFleshHook(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(owner, GadgetType.FLESHHOOK, ultraCosmetics);
+    public GadgetFleshHook(UUID owner) {
+        super(owner, GadgetType.FLESHHOOK);
+        UltraCosmetics.getInstance().registerListener(this);
     }
 
     @org.bukkit.event.EventHandler
@@ -69,7 +68,7 @@ public class GadgetFleshHook extends Gadget implements Listener {
     }
 
     @Override
-    public void onUpdate() {
+    void onUpdate() {
         Iterator it = items.iterator();
         while (it.hasNext()) {
             Object pair = it.next();

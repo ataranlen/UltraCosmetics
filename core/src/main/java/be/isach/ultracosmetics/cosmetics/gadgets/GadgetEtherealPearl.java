@@ -1,8 +1,6 @@
 package be.isach.ultracosmetics.cosmetics.gadgets;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.player.UltraPlayer;
-import be.isach.ultracosmetics.cosmetics.type.GadgetType;
 import org.bukkit.*;
 import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Entity;
@@ -21,6 +19,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.UUID;
 
 /**
  * Created by sacha on 03/08/15.
@@ -32,8 +31,10 @@ public class GadgetEtherealPearl extends Gadget implements Listener {
     HashMap<Player, BukkitRunnable> runnableHashMap = new HashMap<>();
     ArrayList<EnderPearl> pearls = new ArrayList<>();
 
-    public GadgetEtherealPearl(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(owner, GadgetType.ETHEREALPEARL, ultraCosmetics);
+    public GadgetEtherealPearl(UUID owner) {
+        super(owner, GadgetType.ETHEREALPEARL);
+        if (owner != null)
+            UltraCosmetics.getInstance().registerListener(this);
     }
 
     @Override
@@ -45,8 +46,8 @@ public class GadgetEtherealPearl extends Gadget implements Listener {
 
     @Override
     void onRightClick() {
-        if (getOwner().getCurrentMount() != null)
-            getOwner().removeMount();
+        if (UltraCosmetics.getCustomPlayer(getPlayer()).currentMount != null)
+            UltraCosmetics.getCustomPlayer(getPlayer()).removeMount();
         if (getPlayer().getVehicle() instanceof EnderPearl) {
             getPlayer().getVehicle().remove();
         }
@@ -86,7 +87,7 @@ public class GadgetEtherealPearl extends Gadget implements Listener {
             }
         };
         runnableHashMap.put(getPlayer(), runnable);
-        runnable.runTaskTimer(getUltraCosmetics(), 0, 10);
+        runnable.runTaskTimer(UltraCosmetics.getInstance(), 0, 10);
     }
 
     @EventHandler
@@ -125,7 +126,7 @@ public class GadgetEtherealPearl extends Gadget implements Listener {
             f.setFireworkMeta(fm);
             fireworks.add(f);
         }
-        Bukkit.getScheduler().runTaskLater(getUltraCosmetics(), new Runnable() {
+        Bukkit.getScheduler().runTaskLater(UltraCosmetics.getInstance(), new Runnable() {
             @Override
             public void run() {
                 for (Firework f : fireworks)
@@ -154,10 +155,10 @@ public class GadgetEtherealPearl extends Gadget implements Listener {
     }
 
     @Override
-    public void onUpdate() {
+    void onUpdate() {
         if (runnableHashMap.containsKey(getPlayer())) {
             if (getPlayer().isOnGround()) {
-                //getBukkitPlayer().getVehicle().remove();
+                //getPlayer().getVehicle().remove();
                 getPlayer().eject();
             }
         }

@@ -1,34 +1,31 @@
 package be.isach.ultracosmetics.cosmetics.pets;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.UltraCosmeticsData;
+import be.isach.ultracosmetics.config.MessageManager;
 import be.isach.ultracosmetics.config.SettingsManager;
-import be.isach.ultracosmetics.cosmetics.Category;
-import be.isach.ultracosmetics.cosmetics.Cosmetic;
-import be.isach.ultracosmetics.cosmetics.Updatable;
-import be.isach.ultracosmetics.cosmetics.type.PetType;
-import be.isach.ultracosmetics.player.UltraPlayer;
 import be.isach.ultracosmetics.util.EntitySpawningManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Package: ${PACKAGE_NAME}
- * Created by: sacha
- * Date: 03/08/15
- * Project: UltraCosmetics
+ * Created by sacha on 03/08/15.
  */
-public abstract class Pet extends Cosmetic<PetType> implements Updatable {
+public abstract class Pet implements Listener {
+
+    public static final List<ArmorStand> PET_NAMES = new ArrayList<>();
 
     /**
      * List of items popping out from Pet.
@@ -36,9 +33,25 @@ public abstract class Pet extends Cosmetic<PetType> implements Updatable {
     public ArrayList<Item> items = new ArrayList<>();
 
     /**
+     * Pet Type of the pet.
+     */
+    private PetType type;
+
+    /**
      * Armor stand which is the name of the pet.
      */
     public ArmorStand armorStand;
+
+    /**
+     * Current owner of this pet.
+     */
+    protected UUID owner;
+
+    /**
+     * Event listener.
+     * Listens for pet damage.
+     */
+    public Listener listener;
 
     /**
      * Runs the task for pets following players
@@ -55,18 +68,28 @@ public abstract class Pet extends Cosmetic<PetType> implements Updatable {
      */
     public Entity entity;
 
-    public Pet(UltraPlayer owner, UltraCosmetics ultraCosmetics, PetType petType) {
-        super(ultraCosmetics, Category.PETS, owner, petType);
+    public Pet(final UUID owner, final PetType type) {
+        this.type = type;
 
+        if (owner == null) return;
+
+        this.owner = owner;
+
+        if (!getPlayer().hasPermission(getType().getPermission())) {
+            getPlayer().sendMessage(MessageManager.getMessage("No-Permission"));
+            return;
+        }
         this.pathUpdater = Executors.newSingleThreadExecutor();
     }
 
-    @Override
-    protected void onEquip() {
-        this.followTask = UltraCosmeticsData.get().getVersionManager().newPlayerFollower(this, getPlayer());
-        if (getOwner().getCurrentPet() != null)
-            getOwner().removePet();
-        getOwner().setCurrentPet(this);
+    /**
+     * Equips the pet.
+     */
+    public void equip() {
+        this.followTask = UltraCosmetics.getInstance().newPlayerFollower(this, getPlayer());
+        if (UltraCosmetics.getCustomPlayer(getPlayer()).currentPet != null)
+            UltraCosmetics.getCustomPlayer(getPlayer()).removePet();
+        UltraCosmetics.getCustomPlayer(getPlayer()).currentPet = this;
 
         final Pet pet = this;
 
@@ -76,11 +99,11 @@ public abstract class Pet extends Cosmetic<PetType> implements Updatable {
         armorStand.setGravity(false);
         armorStand.setCustomName(getType().getEntityName(getPlayer()));
         armorStand.setCustomNameVisible(true);
-        armorStand.setMetadata("C_AD_ArmorStand", new FixedMetadataValue(getUltraCosmetics(), "C_AD_ArmorStand"));
+        armorStand.setMetadata("C_AD_ArmorStand", new FixedMetadataValue(UltraCosmetics.getInstance(), "C_AD_ArmorStand"));
         armorStand.setRemoveWhenFarAway(true);
-        if (getOwner().getPetName(getType()) != null) {
-            armorStand.setCustomName(getOwner().getPetName(getType()));
-        }
+        PET_NAMES.add(armorStand);
+        if (UltraCosmetics.getCustomPlayer(getPlayer()).getPetName(getType().getConfigName()) != null)
+            armorStand.setCustomName(UltraCosmetics.getCustomPlayer(getPlayer()).getPetName(getType().getConfigName()));
 
         BukkitRunnable runnable = new BukkitRunnable() {
             @Override
@@ -91,19 +114,21 @@ public abstract class Pet extends Cosmetic<PetType> implements Updatable {
                             armorStand.remove();
                         entity.remove();
                         if (getPlayer() != null)
-                            getOwner().setCurrentPet(null);
-                        items.forEach(Entity::remove);
+                            UltraCosmetics.getCustomPlayer(getPlayer()).currentPet = null;
+                        for (Item i : items)
+                            i.remove();
                         items.clear();
                         try {
                             HandlerList.unregisterAll(pet);
-                        } catch (Exception ignored) {
+                            HandlerList.unregisterAll(listener);
+                        } catch (Exception exc) {
                         }
                         cancel();
                         return;
                     }
-                    if (Bukkit.getPlayer(getOwnerUniqueId()) != null
-                            && getOwner().getCurrentPet() != null
-                            && getOwner().getCurrentPet().getType() == getType()) {
+                    if (Bukkit.getPlayer(owner) != null
+                            && UltraCosmetics.getCustomPlayer(Bukkit.getPlayer(owner)).currentPet != null
+                            && UltraCosmetics.getCustomPlayer(Bukkit.getPlayer(owner)).currentPet.getType() == type) {
                         if (SettingsManager.getConfig().getBoolean("Pets-Drop-Items"))
                             onUpdate();
                         pathUpdater.submit(followTask.getTask());
@@ -111,7 +136,8 @@ public abstract class Pet extends Cosmetic<PetType> implements Updatable {
                         cancel();
                         if (armorStand != null)
                             armorStand.remove();
-                        items.forEach(Entity::remove);
+                        for (Item i : items)
+                            i.remove();
                         items.clear();
                         clear();
                         return;
@@ -124,13 +150,15 @@ public abstract class Pet extends Cosmetic<PetType> implements Updatable {
                     cancel();
                     if (armorStand != null)
                         armorStand.remove();
-                    items.forEach(Entity::remove);
+                    for (Item i : items)
+                        i.remove();
                     items.clear();
                     clear();
                 }
             }
         };
-        runnable.runTaskTimer(getUltraCosmetics(), 0, 3);
+        runnable.runTaskTimer(UltraCosmetics.getInstance(), 0, 3);
+        listener = new PetListener(this);
 
         EntitySpawningManager.setBypass(true);
         this.entity = getPlayer().getWorld().spawnEntity(getPlayer().getLocation(), getType().getEntityType());
@@ -140,8 +168,8 @@ public abstract class Pet extends Cosmetic<PetType> implements Updatable {
             else ((Ageable) entity).setAdult();
             ((Ageable) entity).setAgeLock(true);
         }
-        ((LivingEntity) entity).setRemoveWhenFarAway(false);
-        UltraCosmeticsData.get().getVersionManager().getPathfinderUtil().removePathFinders(entity);
+        ((LivingEntity)entity).setRemoveWhenFarAway(false);
+        UltraCosmetics.getInstance().getPathfinderUtil().removePathFinders(entity);
 
 
 //        this.entity.setPassenger(armorStand);
@@ -149,38 +177,55 @@ public abstract class Pet extends Cosmetic<PetType> implements Updatable {
             this.entity.setCustomName(getType().getEntityName(getPlayer()));
             this.entity.setCustomNameVisible(true);
 
-            if (getOwner().getPetName(getType()) != null) {
-                this.entity.setCustomName(getOwner().getPetName(getType()));
-            }
+            if (UltraCosmetics.getCustomPlayer(getPlayer()).getPetName(getType().getConfigName()) != null)
+                this.entity.setCustomName(UltraCosmetics.getCustomPlayer(getPlayer()).getPetName(getType().getConfigName()));
             armorStand.remove();
         }
-        this.entity.setMetadata("Pet", new FixedMetadataValue(getUltraCosmetics(), "UltraCosmetics"));
+        this.entity.setMetadata("Pet", new FixedMetadataValue(UltraCosmetics.getInstance(), "UltraCosmetics"));
+
+        getPlayer().sendMessage(MessageManager.getMessage("Pets.Spawn").replace("%petname%", (UltraCosmetics.getInstance().placeholdersHaveColor())
+                ? getType().getMenuName() : UltraCosmetics.filterColor(getType().getMenuName())));
     }
 
-    @Override
-    protected void onClear() {
+    /**
+     * Get the pet type.
+     *
+     * @return The pet type.
+     */
 
-        // Remove Armor Stand.
-        if (armorStand != null) {
+    public PetType getType() {
+        return type;
+    }
+
+    /**
+     * Called each tick.
+     */
+    protected abstract void onUpdate();
+
+    /**
+     * Called when a player gets his pet cleared.
+     */
+    public void clear() {
+        if (armorStand != null)
             armorStand.remove();
-        }
-
-        // Remove Pet Entity.
         removeEntity();
-
-        // Remove items.
-        items.stream().filter(Entity::isValid).forEach(Entity::remove);
-
-        // Clear items.
+        if (getPlayer() != null && UltraCosmetics.getCustomPlayer(getPlayer()) != null)
+            UltraCosmetics.getCustomPlayer(getPlayer()).currentPet = null;
+        for (Item i : items)
+            i.remove();
         items.clear();
-
-        // Shutdown path updater.
         pathUpdater.shutdown();
-
-        // Empty current Pet.
-        if (getPlayer() != null && getOwner() != null) {
-            getOwner().setCurrentPet(null);
+        try {
+            HandlerList.unregisterAll(this);
+            HandlerList.unregisterAll(listener);
+        } catch (Exception exc) {
         }
+        if (getPlayer() != null) {
+            getPlayer().sendMessage(MessageManager.getMessage("Pets.Despawn").replace("%petname%", (UltraCosmetics.getInstance().placeholdersHaveColor())
+                    ? getType().getMenuName() : UltraCosmetics.filterColor(getType().getMenuName())));
+            UltraCosmetics.getCustomPlayer(getPlayer()).currentPet = null;
+        }
+        owner = null;
     }
 
     public boolean isCustomEntity() {
@@ -195,16 +240,58 @@ public abstract class Pet extends Cosmetic<PetType> implements Updatable {
         return entity;
     }
 
-    @EventHandler
-    public void onEntityDamage(EntityDamageEvent event) {
-        if (event.getEntity() == getEntity())
-            event.setCancelled(true);
+    /**
+     * Get the pet owner.
+     *
+     * @return the UUID of the owner.
+     */
+    protected final UUID getOwner() {
+        return owner;
     }
 
-    @EventHandler
-    public void onPlayerTeleport(PlayerTeleportEvent event) {
-        if (event.getPlayer() == getPlayer())
-            getEntity().teleport(getPlayer());
+    /**
+     * Get the player owner.
+     *
+     * @return The player from getOwner.
+     */
+    protected final Player getPlayer() {
+        return Bukkit.getPlayer(owner);
+    }
+
+    /**
+     * Event Listener.
+     * listens for pets damage.
+     */
+    public class PetListener implements Listener {
+        private Pet pet;
+
+        public PetListener(Pet pet) {
+            this.pet = pet;
+            UltraCosmetics.getInstance().registerListener(this);
+        }
+
+        @EventHandler
+        public void onEntityDamage(EntityDamageEvent event) {
+            if (event.getEntity() == pet.getEntity())
+                event.setCancelled(true);
+        }
+
+        @EventHandler
+        public void onPlayerTeleport(PlayerTeleportEvent event) {
+            if (event.getPlayer() == getPlayer())
+                pet.getEntity().teleport(getPlayer());
+        }
+    }
+
+    public static void purgeNames() {
+        synchronized (PET_NAMES) {
+            for(ArmorStand armorStand : PET_NAMES) {
+                if(armorStand.isValid()) {
+                    armorStand.remove();
+                }
+            }
+            PET_NAMES.clear();
+        }
     }
 
 }

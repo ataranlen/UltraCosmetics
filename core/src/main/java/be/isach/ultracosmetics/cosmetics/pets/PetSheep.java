@@ -1,8 +1,6 @@
 package be.isach.ultracosmetics.cosmetics.pets;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.cosmetics.type.PetType;
-import be.isach.ultracosmetics.player.UltraPlayer;
 import be.isach.ultracosmetics.util.ItemFactory;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -20,17 +18,17 @@ public class PetSheep extends Pet {
 
     Random r = new Random();
 
-    public PetSheep(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(owner, ultraCosmetics, PetType.SHEEP);
+    public PetSheep(UUID owner) {
+        super(owner, PetType.SHEEP);
     }
 
     @Override
-    public void onUpdate() {
+    protected void onUpdate() {
         final Item ITEM = entity.getWorld().dropItem(((Sheep) entity).getEyeLocation(), ItemFactory.create(Material.WOOL, (byte) r.nextInt(017), UUID.randomUUID().toString()));
         ITEM.setPickupDelay(30000);
         ITEM.setVelocity(new Vector(r.nextDouble() - 0.5, r.nextDouble() / 2.0 + 0.3, r.nextDouble() - 0.5).multiply(0.4));
         items.add(ITEM);
-        Bukkit.getScheduler().runTaskLater(getUltraCosmetics(), new Runnable() {
+        Bukkit.getScheduler().runTaskLater(UltraCosmetics.getInstance(), new Runnable() {
             @Override
             public void run() {
                 ITEM.remove();

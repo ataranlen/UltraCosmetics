@@ -1,14 +1,13 @@
 package be.isach.ultracosmetics.cosmetics.gadgets;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.player.UltraPlayer;
-import be.isach.ultracosmetics.cosmetics.type.GadgetType;
 import be.isach.ultracosmetics.util.ItemFactory;
 import be.isach.ultracosmetics.util.SoundUtil;
 import be.isach.ultracosmetics.util.Sounds;
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Item;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -33,8 +32,9 @@ public class GadgetMelonThrower extends Gadget implements Listener {
     ArrayList<Item> melons = new ArrayList<>();
     ArrayList<Item> melonBlocks = new ArrayList<>();
 
-    public GadgetMelonThrower(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(owner, GadgetType.MELONTHROWER,ultraCosmetics);
+    public GadgetMelonThrower(UUID owner) {
+        super(owner, GadgetType.MELONTHROWER);
+        UltraCosmetics.getInstance().registerListener(this);
     }
 
     @EventHandler
@@ -61,9 +61,9 @@ public class GadgetMelonThrower extends Gadget implements Listener {
     }
 
     @Override
-    public void onUpdate() {
+    void onUpdate() {
         try {
-            Bukkit.getScheduler().runTask(getUltraCosmetics(), new Runnable() {
+            Bukkit.getScheduler().runTask(UltraCosmetics.getInstance(), new Runnable() {
                 @Override
                 public void run() {
                     Iterator<Item> melonBlockIterator = melonBlocks.iterator();
@@ -75,7 +75,7 @@ public class GadgetMelonThrower extends Gadget implements Listener {
                                 final Item melon = getPlayer().getWorld().dropItem(item.getLocation(), ItemFactory.create(Material.MELON, (byte) 0x0, UUID.randomUUID().toString()));
                                 melon.setVelocity(new Vector(random.nextDouble() - 0.5, random.nextDouble() / 2.0, random.nextDouble() - 0.5).multiply(0.75D));
                                 melons.add(melon);
-                                Bukkit.getScheduler().runTaskLaterAsynchronously(getUltraCosmetics(), new BukkitRunnable() {
+                                Bukkit.getScheduler().runTaskLaterAsynchronously(UltraCosmetics.getInstance(), new BukkitRunnable() {
                                     @Override
                                     public void run() {
                                         if (melon.isValid()) {

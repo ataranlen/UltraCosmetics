@@ -27,7 +27,7 @@ public class MessageManager {
         addMessage("Invalid-Mount", "%prefix% &c&lInvalid Mount!");
         addMessage("Invalid-Effect", "%prefix% &c&lInvalid Effect!");
         addMessage("Invalid-Morph", "%prefix% &c&lInvalid Morph!");
-        addMessage("Invalid-HatType", "%prefix% &c&lInvalid HatType!");
+        addMessage("Invalid-Hat", "%prefix% &c&lInvalid Hat!");
         addMessage("Invalid-Suit", "%prefix% &c&lInvalid Suit!");
         addMessage("Invalid-Emote", "%prefix% &c&lInvalid Emote!");
         addMessage("Invalid-Menu", "%prefix% &c&lInvalid Menu!");
@@ -56,7 +56,7 @@ public class MessageManager {
         addMessage("Clear-Mount", "§c§lClear current mount");
         addMessage("Clear-Effect", "§c§lClear current effect");
         addMessage("Clear-Morph", "§c§lClear current morph");
-        addMessage("Clear-HatType", "§c§lClear current hat");
+        addMessage("Clear-Hat", "§c§lClear current hat");
         addMessage("Clear-Suit", "§c§lClear current suit");
         addMessage("Clear-Emote", "§c§lClear current emote");
         addMessage("Rename-Pet-Purchase", "§c§lRename the pet to &f&l%name% &c&lfor &e&l%price%$");
@@ -69,7 +69,7 @@ public class MessageManager {
         addMessage("Treasure-Chests-Loot.Mount", "%mount% mount");
         addMessage("Treasure-Chests-Loot.Effect", "%effect% effect");
         addMessage("Treasure-Chests-Loot.Morph", "%morph% morph");
-        addMessage("Treasure-Chests-Loot.HatType", "%hat% hat");
+        addMessage("Treasure-Chests-Loot.Hat", "%hat% hat");
         addMessage("Treasure-Chests-Loot.Money", "&e&l%money%$");
         addMessage("Treasure-Chests-Loot.gadget", "%gadget% gadget");
         addMessage("Treasure-Chests-Loot.Suit", "%suit%");
@@ -109,7 +109,7 @@ public class MessageManager {
         addMessage("Gadgets.ColorBomb.name", "&d&lColor Bomb");
         addMessage("Gadgets.Chickenator.name", "&f&lChickenator");
         addMessage("Gadgets.PortalGun.name", "&c&lPortal &9&lGun");
-        addMessage("Gadgets.PortalGun.No-Block-Range", "%prefix% &c&lNo BLOCKS in range!");
+        addMessage("Gadgets.PortalGun.No-Block-Range", "%prefix% &c&lNo blocks in range!");
         addMessage("Gadgets.BlizzardBlaster.name", "&b&lBlizzard Blaster");
         addMessage("Gadgets.ThorHammer.name", "&f&lThor's Hammer");
         addMessage("Gadgets.SmashDown.name", "&c&lSmashDown");
@@ -294,7 +294,7 @@ public class MessageManager {
         addMessage("Hats.Present.Name", "&c&lPresent");
         addMessage("Hats.Elf.Name", "&a&lElf");
         addMessage("Hats.Bedrock.Name", "&8&lBedrock");
-        addMessage("Hats.Must-Remove-HatType", "%prefix% &c&lYou must remove your helmet to equip a hat!");
+        addMessage("Hats.Must-Remove-Hat", "%prefix% &c&lYou must remove your helmet to equip a hat!");
 
         //SUITS
         addMessage("Suits.Rave.helmet-name", "&b&lR&a&la&e&lv&6&le &f&lHelmet");
@@ -374,11 +374,11 @@ public class MessageManager {
     /**
      * Gets a message.
      *
-     * @param messagePath The path of the message in the config.
+     * @param path The path of the message in the config.
      * @return a message from a config path.
      */
-    public static String getMessage(String messagePath) {
-        return ((String) settingsManager.get(messagePath)).replace("%prefix%", settingsManager.get("Prefix")).replace("&", "§");
+    public static String getMessage(String path) {
+        return ((String) settingsManager.get(path)).replace("%prefix%", ((String) settingsManager.get("Prefix"))).replace("&", "§");
     }
 
 }

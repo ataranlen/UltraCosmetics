@@ -1,12 +1,11 @@
 package be.isach.ultracosmetics.cosmetics.gadgets;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.player.UltraPlayer;
 import be.isach.ultracosmetics.config.SettingsManager;
-import be.isach.ultracosmetics.cosmetics.type.GadgetType;
 import be.isach.ultracosmetics.util.*;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.EntityType;
@@ -31,9 +30,10 @@ public class GadgetPaintballGun extends Gadget implements Listener {
 
     int radius = 2;
 
-    public GadgetPaintballGun(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(owner, GadgetType.PAINTBALLGUN, ultraCosmetics);
+    public GadgetPaintballGun(UUID owner) {
+        super(owner, GadgetType.PAINTBALLGUN);
         if (owner != null) {
+            UltraCosmetics.getInstance().registerListener(this);
             radius = SettingsManager.getConfig().getInt("Gadgets." + getType().getConfigName() + ".Radius");
         }
         displayCooldownMessage = false;
@@ -42,12 +42,12 @@ public class GadgetPaintballGun extends Gadget implements Listener {
     @Override
     void onRightClick() {
         Projectile projectile = getPlayer().launchProjectile(EnderPearl.class, getPlayer().getLocation().getDirection().multiply(2));
-        if (projectiles.containsKey(getOwnerUniqueId()))
-            projectiles.get(getOwnerUniqueId()).add(projectile);
+        if (projectiles.containsKey(getOwner()))
+            projectiles.get(getOwner()).add(projectile);
         else {
             ArrayList<Projectile> projectilesList = new ArrayList<>();
             projectilesList.add(projectile);
-            projectiles.put(getOwnerUniqueId(), projectilesList);
+            projectiles.put(getOwner(), projectilesList);
         }
         SoundUtil.playSound(getPlayer(), Sounds.CHICKEN_EGG_POP, 1.5f, 1.2f);
     }
@@ -128,7 +128,7 @@ public class GadgetPaintballGun extends Gadget implements Listener {
     }
 
     @Override
-    public void onUpdate() {
+    void onUpdate() {
     }
 
     @EventHandler

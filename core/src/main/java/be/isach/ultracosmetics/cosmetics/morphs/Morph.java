@@ -1,22 +1,25 @@
 package be.isach.ultracosmetics.cosmetics.morphs;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.player.UltraPlayer;
 import be.isach.ultracosmetics.config.MessageManager;
-import be.isach.ultracosmetics.cosmetics.Category;
-import be.isach.ultracosmetics.cosmetics.Cosmetic;
-import be.isach.ultracosmetics.cosmetics.type.MorphType;
-import be.isach.ultracosmetics.util.TextUtil;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.MobDisguise;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 
 import java.util.UUID;
 
 /**
  * Created by sacha on 03/08/15.
  */
-public abstract class Morph extends Cosmetic<MorphType> {
+public abstract class Morph implements Listener {
+
+    /**
+     * The Morph Type.
+     */
+    private MorphType type;
 
     /**
      * The MobDiguise
@@ -30,34 +33,42 @@ public abstract class Morph extends Cosmetic<MorphType> {
      */
     public UUID owner;
 
-    public Morph(UltraPlayer owner, MorphType type, UltraCosmetics ultraCosmetics) {
-        super(ultraCosmetics, Category.MORPHS, owner, type);
+    public Morph(UUID owner, MorphType type) {
+        this.type = type;
 
-        if (owner.getCurrentMorph() != null) {
-            owner.removeMorph();
+        if (owner == null) return;
+
+        this.owner = owner;
+
+        if (UltraCosmetics.getCustomPlayer(getPlayer()).currentMorph != null)
+            UltraCosmetics.getCustomPlayer(getPlayer()).removeMorph();
+
+        if (!getPlayer().hasPermission(getType().getPermission())) {
+            getPlayer().sendMessage(MessageManager.getMessage("No-Permission"));
+            return;
         }
 
-        getPlayer().sendMessage(MessageManager.getMessage("Morphs.Morph").replace("%morphname%", TextUtil.filterPlaceHolder(getType().getName(), getUltraCosmetics())));
-        owner.setCurrentMorph(this);
+        getPlayer().sendMessage(MessageManager.getMessage("Morphs.Morph").replace("%morphname%", (UltraCosmetics.getInstance().placeholdersHaveColor()) ?
+                getType().getName() : UltraCosmetics.filterColor(getType().getName())));
+        UltraCosmetics.getCustomPlayer(getPlayer()).currentMorph = this;
 
         disguise = new MobDisguise(getType().getDisguiseType());
         DisguiseAPI.disguiseToAll(getPlayer(), disguise);
-
-        if (!owner.canSeeSelfMorph()) {
+        if (!UltraCosmetics.getCustomPlayer(getPlayer()).canSeeSelfMorph())
             disguise.setViewSelfDisguise(false);
-        }
+//        disguise.setModifyBoundingBox(true);
+//        disguise.setShowName(true);
     }
 
     /**
      * Called when Morph is cleared.
      */
-    @Override
-    protected void onClear() {
-        super.clear();
+    public void clear() {
         DisguiseAPI.undisguiseToAll(getPlayer());
-        getOwner().setCurrentMorph(null);
+        UltraCosmetics.getCustomPlayer(getPlayer()).currentMorph = null;
         if (getPlayer() != null)
-            getPlayer().sendMessage(MessageManager.getMessage("Morphs.Unmorph").replace("%morphname%", TextUtil.filterPlaceHolder(getType().getName(), getUltraCosmetics())));
+            getPlayer().sendMessage(MessageManager.getMessage("Morphs.Unmorph").replace("%morphname%", (UltraCosmetics.getInstance().placeholdersHaveColor()) ?
+                    getType().getName() : UltraCosmetics.filterColor(getType().getName())));
         owner = null;
         try {
             HandlerList.unregisterAll(this);
@@ -66,9 +77,36 @@ public abstract class Morph extends Cosmetic<MorphType> {
     }
 
     /**
+     * Get the type of the Morph.
+     *
+     * @return
+     */
+    public MorphType getType() {
+        return this.type;
+    }
+
+    /**
      * @return Disguise.
      */
     public MobDisguise getDisguise() {
         return disguise;
+    }
+
+    /**
+     * Get the Owner UUID.
+     *
+     * @return The Owner's UUID.
+     */
+    protected final UUID getOwner() {
+        return owner;
+    }
+
+    /**
+     * Get the owner as a Player.
+     *
+     * @return The Player who owns the morph.
+     */
+    protected final Player getPlayer() {
+        return Bukkit.getPlayer(owner);
     }
 }

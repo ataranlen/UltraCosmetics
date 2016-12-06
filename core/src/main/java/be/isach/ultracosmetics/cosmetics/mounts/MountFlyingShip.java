@@ -1,12 +1,11 @@
 package be.isach.ultracosmetics.cosmetics.mounts;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.UltraCosmeticsData;
-import be.isach.ultracosmetics.cosmetics.type.MountType;
-import be.isach.ultracosmetics.player.UltraPlayer;
 import be.isach.ultracosmetics.util.*;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.craftbukkit.v1_10_R1.CraftWorld;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
@@ -28,12 +27,15 @@ public class MountFlyingShip extends Mount {
     Entity currentboom = null;
     //ArmorStand nameTag = null;
 
-    public MountFlyingShip(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
+    public MountFlyingShip(UUID owner, UltraCosmetics ultraCosmetics) {
         super(owner, MountType.FLYINGSHIP, ultraCosmetics);
+        if (owner != null)
+            UltraCosmetics.getInstance().registerListener(this);
+        //  spawnNameTag();
     }
 
     @Override
-    public void onUpdate() {
+    protected void onUpdate() {
         if (entity.getPassenger() == null)
             clear();
 
@@ -49,7 +51,7 @@ public class MountFlyingShip extends Mount {
         vector.setX(-h * Math.sin(Math.toRadians(rotX)));
         vector.setZ(h * Math.cos(Math.toRadians(rotX)));
 
-        UltraCosmeticsData.get().getVersionManager().getEntityUtil().moveShip(getPlayer(), entity, vector);
+        UltraCosmetics.getInstance().getEntityUtil().moveShip(getPlayer(), entity, vector);
 
         if (currentboom != null) {
             if (currentboom.isDead()) {
@@ -84,12 +86,12 @@ public class MountFlyingShip extends Mount {
              nameTag = (ArmorStand) ent.getWorld().spawnEntity(ent.getLocation(), EntityType.ARMOR_STAND);
              nameTag.setVisible(false);
              nameTag.setSmall(true);
-             nameTag.setCustomName(getGadgetType().getName(getBukkitPlayer()));
+             nameTag.setCustomName(getType().getName(getPlayer()));
              nameTag.setCustomNameVisible(true);
              //hide name of ent
              ent.setCustomNameVisible(false);
-             nameTag.setMetadata("C_AD_ArmorStand", new FixedMetadataValue(Core.get(),"C_AD_ArmorStand"));
-             //getBukkitPlayer().setPassenger(nameTag);
+             nameTag.setMetadata("C_AD_ArmorStand", new FixedMetadataValue(Core.getInstance(),"C_AD_ArmorStand"));
+             //getPlayer().setPassenger(nameTag);
         }
         */
     @EventHandler

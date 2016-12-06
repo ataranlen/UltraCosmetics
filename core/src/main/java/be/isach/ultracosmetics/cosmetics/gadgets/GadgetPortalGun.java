@@ -1,23 +1,21 @@
 package be.isach.ultracosmetics.cosmetics.gadgets;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.config.MessageManager;
-import be.isach.ultracosmetics.player.UltraPlayer;
-import be.isach.ultracosmetics.cosmetics.type.GadgetType;
 import be.isach.ultracosmetics.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.util.Vector;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Created by sacha on 07/08/15.
@@ -32,8 +30,8 @@ public class GadgetPortalGun extends Gadget {
     Location locRed;
     BlockFace redBlockFace;
 
-    public GadgetPortalGun(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(owner, GadgetType.PORTALGUN, ultraCosmetics);
+    public GadgetPortalGun(UUID owner) {
+        super(owner, GadgetType.PORTALGUN);
         displayCooldownMessage = false;
         useTwoInteractMethods = true;
     }
@@ -133,7 +131,7 @@ public class GadgetPortalGun extends Gadget {
     }
 
     @Override
-    public void onUpdate() {
+    void onUpdate() {
         if (locBlue != null) {
             Location portalCenter = locBlue.clone();
             if (locRed != null && !teleported) {
@@ -170,7 +168,7 @@ public class GadgetPortalGun extends Gadget {
                         loc.setYaw(getYaw(redBlockFace));
                         teleport(getPlayer(), loc);
                     }
-                    Bukkit.getScheduler().runTaskLaterAsynchronously(getUltraCosmetics(), new Runnable() {
+                    Bukkit.getScheduler().runTaskLaterAsynchronously(UltraCosmetics.getInstance(), new Runnable() {
                         @Override
                         public void run() {
                             teleported = false;
@@ -228,7 +226,7 @@ public class GadgetPortalGun extends Gadget {
                         loc.setYaw(getYaw(blueBlockFace));
                         teleport(getPlayer(), loc);
                     }
-                    Bukkit.getScheduler().runTaskLaterAsynchronously(getUltraCosmetics(), new Runnable() {
+                    Bukkit.getScheduler().runTaskLaterAsynchronously(UltraCosmetics.getInstance(), new Runnable() {
                         @Override
                         public void run() {
                             teleported = false;
@@ -264,15 +262,6 @@ public class GadgetPortalGun extends Gadget {
 
     }
 
-    @Override
-    protected boolean checkRequirements(PlayerInteractEvent event) {
-        if (getPlayer().getTargetBlock((Set<Material>) null, 20).getType() == Material.AIR) {
-            getPlayer().sendMessage(MessageManager.getMessage("Gadgets.PortalGun.No-Block-Range"));
-            return false;
-        }
-        return true;
-    }
-
     public BlockFace[] axis = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
     public BlockFace[] radial = {BlockFace.NORTH, BlockFace.NORTH_EAST, BlockFace.EAST, BlockFace.SOUTH_EAST, BlockFace.SOUTH, BlockFace.SOUTH_WEST, BlockFace.WEST, BlockFace.NORTH_WEST};
 
@@ -289,7 +278,7 @@ public class GadgetPortalGun extends Gadget {
     }
 
     private void teleport(final Entity entity, final Location location) {
-        Bukkit.getScheduler().runTask(getUltraCosmetics(), new Runnable() {
+        Bukkit.getScheduler().runTask(UltraCosmetics.getInstance(), new Runnable() {
             @Override
             public void run() {
                 entity.teleport(location);

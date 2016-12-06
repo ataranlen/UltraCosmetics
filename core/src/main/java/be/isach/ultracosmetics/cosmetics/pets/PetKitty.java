@@ -1,8 +1,6 @@
 package be.isach.ultracosmetics.cosmetics.pets;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.cosmetics.type.PetType;
-import be.isach.ultracosmetics.player.UltraPlayer;
 import be.isach.ultracosmetics.util.ItemFactory;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -20,9 +18,9 @@ public class PetKitty extends Pet {
 
     Random r = new Random();
 
-    public PetKitty(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(owner, ultraCosmetics, PetType.KITTY);
-        Bukkit.getScheduler().runTaskLater(getUltraCosmetics(), new Runnable() {
+    public PetKitty(UUID owner) {
+        super(owner, PetType.KITTY);
+        Bukkit.getScheduler().runTaskLater(UltraCosmetics.getInstance(), new Runnable() {
             @Override
             public void run() {
                 if (getOwner() != null && getEntity() != null) {
@@ -36,16 +34,16 @@ public class PetKitty extends Pet {
     }
 
     @Override
-    public void onUpdate() {
-        final Item item = entity.getWorld().dropItem(((Ocelot) entity).getEyeLocation(), ItemFactory.create(Material.RAW_FISH, (byte) 0x0, UUID.randomUUID().toString()));
-        item.setPickupDelay(30000);
-        item.setVelocity(new Vector(r.nextDouble() - 0.5, r.nextDouble() / 2.0 + 0.3, r.nextDouble() - 0.5).multiply(0.4));
-        items.add(item);
-        Bukkit.getScheduler().runTaskLater(getUltraCosmetics(), new Runnable() {
+    protected void onUpdate() {
+        final Item ITEM = entity.getWorld().dropItem(((Ocelot) entity).getEyeLocation(), ItemFactory.create(Material.RAW_FISH, (byte) 0x0, UUID.randomUUID().toString()));
+        ITEM.setPickupDelay(30000);
+        ITEM.setVelocity(new Vector(r.nextDouble() - 0.5, r.nextDouble() / 2.0 + 0.3, r.nextDouble() - 0.5).multiply(0.4));
+        items.add(ITEM);
+        Bukkit.getScheduler().runTaskLater(UltraCosmetics.getInstance(), new Runnable() {
             @Override
             public void run() {
-                item.remove();
-                items.remove(item);
+                ITEM.remove();
+                items.remove(ITEM);
             }
         }, 5);
     }

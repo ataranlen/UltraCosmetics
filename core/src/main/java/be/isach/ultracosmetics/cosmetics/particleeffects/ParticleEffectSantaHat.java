@@ -1,8 +1,5 @@
 package be.isach.ultracosmetics.cosmetics.particleeffects;
 
-import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.cosmetics.type.ParticleEffectType;
-import be.isach.ultracosmetics.player.UltraPlayer;
 import be.isach.ultracosmetics.util.MathUtils;
 import be.isach.ultracosmetics.util.UtilParticles;
 import org.bukkit.Location;
@@ -16,13 +13,15 @@ public class ParticleEffectSantaHat extends ParticleEffect {
 
     public int particles = 12;
 
-    public ParticleEffectSantaHat(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(ultraCosmetics, owner, ParticleEffectType.SANTAHAT);
-        this.ignoreMove = true;
+    public ParticleEffectSantaHat(UUID owner) {
+        super(
+                owner, ParticleEffectType.SANTAHAT
+        );
+        ignoreMove = true;
     }
 
     @Override
-    public void onUpdate() {
+    void onUpdate() {
         Location location = getPlayer().getEyeLocation().add(0, 0.3, 0);
         float radius = 0.25f;
         drawCircle(radius + 0.1f, -0.05f, location, false);
@@ -51,10 +50,5 @@ public class ParticleEffectSantaHat extends ParticleEffect {
             UtilParticles.display(255, red ? 0 : 255, red ? 0 : 255, location);
             location.subtract(x, height, z);
         }
-    }
-
-    @Override
-    protected void onEquip() {
-
     }
 }

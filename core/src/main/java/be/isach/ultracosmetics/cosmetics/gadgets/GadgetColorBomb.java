@@ -1,11 +1,10 @@
 package be.isach.ultracosmetics.cosmetics.gadgets;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.player.UltraPlayer;
-import be.isach.ultracosmetics.cosmetics.type.GadgetType;
 import be.isach.ultracosmetics.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -26,8 +25,8 @@ public class GadgetColorBomb extends Gadget {
     Random random = new Random();
     private boolean running = false;
 
-    public GadgetColorBomb(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(owner, GadgetType.COLORBOMB, ultraCosmetics);
+    public GadgetColorBomb(UUID owner) {
+        super(owner, GadgetType.COLORBOMB);
 
     }
 
@@ -40,12 +39,12 @@ public class GadgetColorBomb extends Gadget {
     }
 
     @Override
-    public void onUpdate() {
+    void onUpdate() {
         if (bomb != null && bomb.isValid() && !running && bomb.isOnGround()) {
 
             running = true;
             bomb.setVelocity(new Vector(0, 0, 0));
-            Bukkit.getScheduler().runTaskLater(getUltraCosmetics(), new Runnable() {
+            Bukkit.getScheduler().runTaskLater(UltraCosmetics.getInstance(), new Runnable() {
                 @Override
                 public void run() {
                     onClear();
@@ -76,7 +75,7 @@ public class GadgetColorBomb extends Gadget {
                         items.remove(item);
                     }
                 }
-                Bukkit.getScheduler().runTask(getUltraCosmetics(), new Runnable() {
+                Bukkit.getScheduler().runTask(UltraCosmetics.getInstance(), new Runnable() {
                     @Override
                     public void run() {
                         if (bomb == null)

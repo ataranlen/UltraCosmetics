@@ -1,8 +1,6 @@
 package be.isach.ultracosmetics.cosmetics.gadgets;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.player.UltraPlayer;
-import be.isach.ultracosmetics.cosmetics.type.GadgetType;
 import be.isach.ultracosmetics.util.BlockUtils;
 import be.isach.ultracosmetics.util.Particles;
 import be.isach.ultracosmetics.util.UtilParticles;
@@ -17,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by Sacha on 15/12/15.
@@ -26,12 +25,12 @@ public class GadgetFreezeCannon extends Gadget {
     private List<Item> items;
     private List<Item> queue;
 
-    public GadgetFreezeCannon(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(owner, GadgetType.FREEZECANNON, ultraCosmetics);
+    public GadgetFreezeCannon(UUID owner) {
+        super(owner, GadgetType.FREEZECANNON);
         if (owner == null) return;
         items = new ArrayList<>();
         queue = new ArrayList<>();
-        Bukkit.getPluginManager().registerEvents(this, getUltraCosmetics());
+        Bukkit.getPluginManager().registerEvents(this, UltraCosmetics.getInstance());
     }
 
     @Override
@@ -47,7 +46,7 @@ public class GadgetFreezeCannon extends Gadget {
     }
 
     @Override
-    public void onUpdate() {
+    void onUpdate() {
         for (Item item : queue)
             items.add(item);
         queue.clear();

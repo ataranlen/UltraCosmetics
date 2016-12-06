@@ -1,8 +1,6 @@
 package be.isach.ultracosmetics.cosmetics.gadgets;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.player.UltraPlayer;
-import be.isach.ultracosmetics.cosmetics.type.GadgetType;
 import be.isach.ultracosmetics.util.MathUtils;
 import be.isach.ultracosmetics.util.Particles;
 import be.isach.ultracosmetics.util.UtilParticles;
@@ -16,6 +14,7 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by sacha on 08/08/15.
@@ -24,8 +23,8 @@ public class GadgetTsunami extends Gadget {
 
     List<Entity> cooldownJump = new ArrayList<>();
 
-    public GadgetTsunami(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(owner, GadgetType.TSUNAMI, ultraCosmetics);
+    public GadgetTsunami(UUID owner) {
+        super(owner, GadgetType.TSUNAMI);
     }
 
     @Override
@@ -33,7 +32,7 @@ public class GadgetTsunami extends Gadget {
         final Vector v = getPlayer().getLocation().getDirection().normalize().multiply(0.3);
         v.setY(0);
         final Location loc = getPlayer().getLocation().subtract(0, 1, 0).add(v);
-        final int i = Bukkit.getScheduler().runTaskTimerAsynchronously(getUltraCosmetics(), new Runnable() {
+        final int i = Bukkit.getScheduler().runTaskTimerAsynchronously(UltraCosmetics.getInstance(), new Runnable() {
             @Override
             public void run() {
                 if (loc.getBlock().getType() != Material.AIR
@@ -56,7 +55,7 @@ public class GadgetTsunami extends Gadget {
                                 ent != getPlayer() && !(ent instanceof ArmorStand)) {
                             MathUtils.applyVelocity(ent, new Vector(0, 1, 0).add(v.clone().multiply(2)));
                             cooldownJump.add(ent);
-                            Bukkit.getScheduler().runTaskLater(getUltraCosmetics(), new Runnable() {
+                            Bukkit.getScheduler().runTaskLater(UltraCosmetics.getInstance(), new Runnable() {
                                 @Override
                                 public void run() {
                                     cooldownJump.remove(ent);
@@ -69,7 +68,7 @@ public class GadgetTsunami extends Gadget {
             }
         }, 0, 1).getTaskId();
 
-        Bukkit.getScheduler().runTaskLater(getUltraCosmetics(), new Runnable() {
+        Bukkit.getScheduler().runTaskLater(UltraCosmetics.getInstance(), new Runnable() {
             @Override
             public void run() {
                 Bukkit.getScheduler().cancelTask(i);
@@ -84,7 +83,7 @@ public class GadgetTsunami extends Gadget {
     }
 
     @Override
-    public void onUpdate() {
+    void onUpdate() {
 
     }
 

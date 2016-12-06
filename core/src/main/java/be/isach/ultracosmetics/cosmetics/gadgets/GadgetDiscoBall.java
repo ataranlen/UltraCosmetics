@@ -1,10 +1,6 @@
 package be.isach.ultracosmetics.cosmetics.gadgets;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.UltraCosmeticsData;
-import be.isach.ultracosmetics.config.MessageManager;
-import be.isach.ultracosmetics.player.UltraPlayer;
-import be.isach.ultracosmetics.cosmetics.type.GadgetType;
 import be.isach.ultracosmetics.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -13,42 +9,44 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 /**
  * Created by sacha on 03/08/15.
  */
 public class GadgetDiscoBall extends Gadget {
 
-    public static final List<GadgetDiscoBall> DISCO_BALLS = new ArrayList<>();
+    Random r = new Random();
+    int i = 0;
+    double i2 = 0;
+    ArmorStand armorStand;
+    boolean running = false;
 
-    private Random r = new Random();
-    private int i = 0;
-    private double i2 = 0;
-    private ArmorStand armorStand;
-    private boolean running = false;
-
-    public GadgetDiscoBall(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(owner, GadgetType.DISCOBALL, ultraCosmetics);
+    public GadgetDiscoBall(UUID owner) {
+        super(owner, GadgetType.DISCOBALL);
     }
 
     @Override
     public void onClear() {
         try {
             running = false;
+//            if (UltraCosmetics.usingSpigot())
+//                armorStand.playEffect(armorStand.getEyeLocation().add(-.5d, -.5d, -.5d), Effect.STEP_SOUND, Material.STAINED_CLAY.getId(), 4, 0, 0, 0, 1, 200, 32);
             armorStand.remove();
             armorStand = null;
             i = 0;
             i2 = 0;
-            DISCO_BALLS.remove(this);
-        } catch (Exception ignored) {
+            UltraCosmetics.getInstance().discoBalls.remove(this);
+        } catch (Exception exc) {
         }
         HandlerList.unregisterAll(this);
     }
@@ -61,8 +59,8 @@ public class GadgetDiscoBall extends Gadget {
         armorStand.setSmall(false);
         armorStand.setHelmet(ItemFactory.create(Material.STAINED_GLASS, (byte)3, " "));
         running = true;
-        DISCO_BALLS.add(this);
-        Bukkit.getScheduler().runTaskLater(getUltraCosmetics(), new BukkitRunnable() {
+        UltraCosmetics.getInstance().discoBalls.add(this);
+        Bukkit.getScheduler().runTaskLater(UltraCosmetics.getInstance(), new BukkitRunnable() {
             @Override
             public void run() {
                 onClear();
@@ -71,23 +69,10 @@ public class GadgetDiscoBall extends Gadget {
     }
 
     @Override
-    protected boolean checkRequirements(PlayerInteractEvent event) {
-        if (GadgetDiscoBall.DISCO_BALLS.size() > 0) {
-            getPlayer().sendMessage(MessageManager.getMessage("Gadgets.DiscoBall.Already-Active"));
-            return false;
-        }
-        if (getPlayer().getLocation().add(0, 4, 0).getBlock() != null && getPlayer().getLocation().add(0, 4, 0).getBlock().getType() != Material.AIR) {
-            getPlayer().sendMessage(MessageManager.getMessage("Gadgets.DiscoBall.Not-Space-Above"));
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public void onUpdate() {
+    void onUpdate() {
         if (running) {
             armorStand.setHeadPose(armorStand.getHeadPose().add(0, 0.2, 0));
-            if (UltraCosmeticsData.get().getServerVersion().compareTo(ServerVersion.v1_9_R1) < 0)
+            if (UltraCosmetics.getServerVersion().compareTo(ServerVersion.v1_9_R1) < 0)
                 armorStand.setHelmet(ItemFactory.create(Material.STAINED_GLASS, (byte) r.nextInt(15), " "));
             UtilParticles.display(Particles.SPELL, armorStand.getEyeLocation(), 1, 1f);
             UtilParticles.display(Particles.SPELL_INSTANT, armorStand.getEyeLocation(), 1, 1f);
@@ -97,7 +82,7 @@ public class GadgetDiscoBall extends Gadget {
             angle = 2 * Math.PI * i / 100;
             x = Math.cos(angle) * 4;
             z = Math.sin(angle) * 4;
-            if (UltraCosmeticsData.get().isUsingSpigot())
+            if (UltraCosmetics.usingSpigot())
                 drawParticleLine(armorStand.getEyeLocation().add(-.5d, -.5d, -.5d).clone().add(0.5, 0.5, 0.5).clone().add(x, 0, z), armorStand.getEyeLocation().add(-.5d, -.5d, -.5d).clone().add(0.5, 0.5, 0.5), false, 20);
             i += 6;
             angle2 = 2 * Math.PI * i2 / 100;

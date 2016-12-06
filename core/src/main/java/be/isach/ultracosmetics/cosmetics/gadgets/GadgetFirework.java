@@ -1,8 +1,6 @@
 package be.isach.ultracosmetics.cosmetics.gadgets;
 
 import be.isach.ultracosmetics.UltraCosmetics;
-import be.isach.ultracosmetics.player.UltraPlayer;
-import be.isach.ultracosmetics.cosmetics.type.GadgetType;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.entity.EntityType;
@@ -10,6 +8,7 @@ import org.bukkit.entity.Firework;
 import org.bukkit.inventory.meta.FireworkMeta;
 
 import java.util.Random;
+import java.util.UUID;
 
 /**
  * Created by Sacha on 11/11/15.
@@ -18,8 +17,9 @@ public class GadgetFirework extends Gadget {
 
     private static Random random = new Random();
 
-    public GadgetFirework(UltraPlayer owner, UltraCosmetics ultraCosmetics) {
-        super(owner, GadgetType.FIREWORK, ultraCosmetics);
+    public GadgetFirework(UUID owner) {
+        super(owner, GadgetType.FIREWORK);
+        UltraCosmetics.getInstance().registerListener(this);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class GadgetFirework extends Gadget {
     }
 
     @Override
-    public void onUpdate() {
+    void onUpdate() {
     }
 
     @Override
