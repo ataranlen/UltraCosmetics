@@ -6,7 +6,7 @@ import be.isach.ultracosmetics.cosmetics.type.MountType;
 import be.isach.ultracosmetics.player.UltraPlayer;
 import be.isach.ultracosmetics.util.Particles;
 import be.isach.ultracosmetics.util.UtilParticles;
-import org.bukkit.entity.Horse;
+import org.bukkit.craftbukkit.v1_11_R1.entity.CraftHorse;
 
 import java.util.UUID;
 
@@ -22,11 +22,11 @@ public class MountInfernalHorror extends Mount {
     @Override
     public void onEquip() {
         super.onEquip();
-        if (entity instanceof Horse) {
-            Horse horse = (Horse) entity;
-            horse.setVariant(Horse.Variant.SKELETON_HORSE);
-            variant = Horse.Variant.SKELETON_HORSE;
-            horse.setVariant(Horse.Variant.SKELETON_HORSE);
+        if (entity instanceof CraftHorse) {
+            CraftHorse horse = (CraftHorse) entity;
+            horse.setVariant(CraftHorse.Variant.SKELETON_HORSE);
+            variant = CraftHorse.Variant.SKELETON_HORSE;
+            horse.setVariant(CraftHorse.Variant.SKELETON_HORSE);
             horse.setJumpStrength(0.7);
             UltraCosmeticsData.get().getVersionManager().getEntityUtil().setHorseSpeed(horse, 0.4d);
         }
