@@ -1,0 +1,17 @@
+dependencies {
+    compile 'spigot:spigot:latest'
+    compile ('LibsDisguises:LibsDisguises:9.0.7') {
+        exclude group: 'org.spigotmc'
+    }
+    compile('net.milkbowl.vault:VaultAPI:1.5') {
+        exclude group: 'org.bukkit'
+    }
+}
+
+processResources {
+	inputs.property("version", project.version)
+	
+	filter org.apache.tools.ant.filters.ReplaceTokens, tokens: [
+	    'VERSION': project.version.split('-')[0]
+    ]
+}
