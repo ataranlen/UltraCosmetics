@@ -19,11 +19,11 @@ import java.util.UUID;
  */
 public enum MountType {
     DRUGGEDHORSE("ultracosmetics.mounts.druggedhorse", "DruggedHorse", Material.SUGAR, (byte) 0, EntityType.HORSE, "&7&oThat is just too much!", MountDruggedHorse.class),
-    INFERNALHORROR("ultracosmetics.mounts.infernalhorror", "InfernalHorror", Material.BONE, (byte) 0, EntityType.HORSE,
+    INFERNALHORROR("ultracosmetics.mounts.infernalhorror", "InfernalHorror", Material.BONE, (byte) 0, EntityType.SKELETON_HORSE,
             "&7&oThis mount comes directly from... hell!", MountInfernalHorror.class),
     GLACIALSTEED("ultracosmetics.mounts.glacialsteed", "GlacialSteed", Material.PACKED_ICE, (byte) 0, EntityType.HORSE,
             "&7&oThis mount comes from North Pole!", MountGlacialSteed.class),
-    WALKINGDEAD("ultracosmetics.mounts.walkingdead", "WalkingDead", Material.ROTTEN_FLESH, (byte) 0, EntityType.HORSE, "&7&oGraaaaw...", MountWalkingDead.class),
+    WALKINGDEAD("ultracosmetics.mounts.walkingdead", "WalkingDead", Material.ROTTEN_FLESH, (byte) 0, EntityType.ZOMBIE_HORSE, "&7&oGraaaaw...", MountWalkingDead.class),
     MOUNTOFFIRE("ultracosmetics.mounts.mountoffire", "MountOfFire", Material.BLAZE_POWDER, (byte) 0, EntityType.HORSE, "&7&oThe mount of Hadès!", MountOfFire.class),
     MOUNTOFWATER("ultracosmetics.mounts.mountofwater", "MountOfWater", Material.INK_SACK, (byte) 4, EntityType.HORSE, "&7&oThe mount of Poséidon!", MountOfWater.class),
     ECOLOGISTHORSE("ultracosmetics.mounts.ecologisthorse", "EcologistHorse", Material.RED_ROSE, (byte) 0, EntityType.HORSE, "&7&oBecome ecologist!", MountEcologistHorse.class),
@@ -37,7 +37,7 @@ public enum MountType {
     HYPECART("ultracosmetics.mounts.hypecart", "HypeCart", Material.MINECART, (byte) 0, EntityType.MINECART,
             "&7&oEver wanted to drive a F1?\n&7&oNow you can!", MountHypeCart.class),
     SPIDER("ultracosmetics.mounts.spider", "Spider", Material.WEB, (byte) 0, EntityType.SPIDER, "&7&oYOU are the spider jockey!", UltraCosmetics.getInstance().getMounts().getSpiderClass()),
-    RUDOLPH("ultracosmetics.mounts.rudolph", "Rudolph", Material.DEAD_BUSH, (byte) 0, EntityType.HORSE,
+    RUDOLPH("ultracosmetics.mounts.rudolph", "Rudolph", Material.DEAD_BUSH, (byte) 0, EntityType.MULE,
             "&7&oWhat would be Christmas\n&7&owithout Rudolph the Reeinder?", MountRudolph.class),
     MOLTENSNAKE("ultracosmetics.mounts.moltensnake", "MoltenSnake", Material.MAGMA_CREAM, (byte) 0, EntityType.MAGMA_CUBE,
             "&7&oDeep under the Earth's surface, there\n&7&oexists a mythical species of Molten\n&7&oSnakes. This one will serve you eternally.", MountMoltenSnake.class),

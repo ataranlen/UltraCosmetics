@@ -60,11 +60,11 @@ public class WrapperEntityLiving extends WrapperEntity {
      * 1_9_R2 : bd
      */
     public boolean isJumping() {
-        return getField("be", EntityLiving.class, Boolean.class);
+        return getField("bd", EntityLiving.class, Boolean.class);
     }
 
     public void setJumping(boolean jumping) {
-        setField("be", EntityLiving.class, jumping);
+        setField("bd", EntityLiving.class, jumping);
     }
 
     /*

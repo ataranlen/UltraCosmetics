@@ -31,6 +31,7 @@ import org.bukkit.potion.PotionEffectType;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import static org.bukkit.Bukkit.getLogger;
 
 /**
  * Created by sacha on 03/08/15.
@@ -199,9 +200,10 @@ public class UltraPlayer {
     /**
      * Removes the current Mount.
      */
-    public void removeMount() {
+    public void removeMount() { //confirmed, something is triggering removeMount. But what? >.>
         if (currentMount != null) {
-            currentMount.clear();
+            //getLogger().info("4"); //this also triggers when you dismount intentionally //or it used to, only 2 and 5 do for dismount
+            currentMount.clear(); //4 still triggered for despawning from menu
             currentMount = null;
             getPlayer().removePotionEffect(PotionEffectType.CONFUSION);
         }

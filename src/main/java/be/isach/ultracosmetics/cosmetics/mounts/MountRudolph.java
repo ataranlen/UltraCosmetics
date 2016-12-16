@@ -15,6 +15,7 @@ import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 
 import java.util.UUID;
+import org.bukkit.entity.Mule;
 
 /**
  * Created by Sacha on 29/11/15.
@@ -23,7 +24,7 @@ public class MountRudolph extends Mount {
 
     ArmorStand left;
     ArmorStand right;
-    Horse horse;
+    Mule horse;
 
     public MountRudolph(UUID owner, UltraCosmetics ultraCosmetics) {
         super(owner, MountType.RUDOLPH, ultraCosmetics);
@@ -32,13 +33,13 @@ public class MountRudolph extends Mount {
     @Override
     protected void onEquip() {
         if (owner != null) {
-            horse = (Horse) entity;
-            horse.setColor(Horse.Color.DARK_BROWN);
-            horse.setVariant(Horse.Variant.MULE);
-            color = Horse.Color.DARK_BROWN;
-            variant = Horse.Variant.MULE;
+            horse = (Mule) entity;
+            //horse.setColor(Mule.Color.DARK_BROWN);
+            //horse.setVariant(Horse.Variant.MULE);
+            //color = Horse.Color.DARK_BROWN;
+            //variant = Horse.Variant.MULE;
             horse.setJumpStrength(0.7);
-            UltraCosmetics.getInstance().getEntityUtil().setHorseSpeed(horse, 0.4d);
+            //UltraCosmetics.getInstance().getEntityUtil().setHorseSpeed(horse, 0.4d);
             left = spawnArmorStand(false);
             right = spawnArmorStand(true);
             moveAntlers();

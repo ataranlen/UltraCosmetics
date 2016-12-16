@@ -30,9 +30,9 @@ public class MountOfWater extends Mount {
         UltraCosmetics.getInstance().registerListener(this);
         Horse horse = (Horse) entity;
         horse.setColor(Horse.Color.BLACK);
-        horse.setVariant(Horse.Variant.HORSE);
+        //horse.setVariant(Horse.Variant.HORSE);
         color = Horse.Color.BLACK;
-        variant = Horse.Variant.HORSE;
+        //variant = Horse.Variant.HORSE;
         horse.setJumpStrength(0.7);
         UltraCosmetics.getInstance().getEntityUtil().setHorseSpeed(horse, 0.4d);
 

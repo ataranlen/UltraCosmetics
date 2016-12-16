@@ -20,6 +20,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.List;
+import static org.bukkit.Bukkit.getLogger;
 
 /**
  * Created by Sacha on 11/11/15.
@@ -208,6 +209,7 @@ public class MountManager implements Listener {
                     if (UltraCosmetics.getCustomPlayer((Player) event.getWhoClicked()).currentMount != null) {
                         int currentPage = getCurrentPage((Player) event.getWhoClicked());
                         event.getWhoClicked().closeInventory();
+                        //getLogger().info("6");
                         UltraCosmetics.getCustomPlayer((Player) event.getWhoClicked()).removeMount();
                         openMenu((Player) event.getWhoClicked(), currentPage);
                     } else return;
@@ -217,6 +219,7 @@ public class MountManager implements Listener {
                 if (UltraCosmetics.closeAfterSelect)
                     event.getWhoClicked().closeInventory();
                 if (event.getCurrentItem().getItemMeta().getDisplayName().startsWith(MessageManager.getMessage("Menu.Despawn"))) {
+                    //getLogger().info("7");
                     UltraCosmetics.getCustomPlayer((Player) event.getWhoClicked()).removeMount();
                     if (!UltraCosmetics.closeAfterSelect)
                         openMenu((Player) event.getWhoClicked(), currentPage);
@@ -228,6 +231,7 @@ public class MountManager implements Listener {
                     openMenu((Player) event.getWhoClicked(), getCurrentPage((Player) event.getWhoClicked()) - 1);
                     return;
                 } else if (event.getCurrentItem().getItemMeta().getDisplayName().startsWith(MessageManager.getMessage("Menu.Spawn"))) {
+                    //getLogger().info("8"); //it reaches this line but then doesn't removeMount somehow? Not super important I suppose?
                     UltraCosmetics.getCustomPlayer((Player) event.getWhoClicked()).removeMount();
                     StringBuilder sb = new StringBuilder();
                     String name = event.getCurrentItem().getItemMeta().getDisplayName().replaceFirst(MessageManager.getMessage("Menu.Spawn"), "");

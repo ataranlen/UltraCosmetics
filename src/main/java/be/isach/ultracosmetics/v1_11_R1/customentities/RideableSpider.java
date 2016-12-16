@@ -79,7 +79,7 @@ public class RideableSpider extends EntitySpider implements IMountCustomEntity, 
                 forMot *= 0.25F;
             }
 
-            wEntity.setJumping(wPassenger.isJumping());
+            wEntity.setJumping(wPassenger.isJumping()); //isJumping returns a boolean? Presumably true = jumping and false = not jumping
 
             if (wPassenger.isJumping() && (entity.onGround || entityBase.canFly())) {
                 entity.motY = 0.4D;

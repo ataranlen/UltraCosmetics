@@ -24,9 +24,9 @@ public class MountGlacialSteed extends Mount {
             Horse horse = (Horse) entity;
 
             horse.setColor(Horse.Color.WHITE);
-            horse.setVariant(Horse.Variant.HORSE);
+            //horse.setVariant(Horse.Variant.HORSE);
             color = Horse.Color.WHITE;
-            variant = Horse.Variant.HORSE;
+            //variant = Horse.Variant.HORSE;
             horse.setJumpStrength(0.7);
             UltraCosmetics.getInstance().getEntityUtil().setHorseSpeed(horse, 0.4d);
         }

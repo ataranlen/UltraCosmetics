@@ -10,6 +10,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.UUID;
+import static org.bukkit.Bukkit.getLogger;
 
 /**
  * Created by sacha on 10/08/15.
@@ -26,10 +27,14 @@ public class MountDruggedHorse extends Mount {
             Horse horse = (Horse) entity;
 
             horse.setColor(Horse.Color.CHESTNUT);
+            //horse.setDomestication(0); //experimenting with making horses more tame, they might be kicking the player off
+            //horse.setMaxDomestication(0);
+            // //this should work better than domestication level
             color = Horse.Color.CHESTNUT;
-            variant = Horse.Variant.HORSE;
-            horse.setVariant(Horse.Variant.HORSE);
+            //variant = Horse.Variant.HORSE;
+            //horse.setVariant(Horse.Variant.HORSE);
             UltraCosmetics.getInstance().getEntityUtil().setHorseSpeed(horse, 1.1d);
+            //getLogger().info(horse.getInventory().toString()); 
             horse.setJumpStrength(1.3);
         }
         Bukkit.getScheduler().runTaskLater(UltraCosmetics.getInstance(), new Runnable() {

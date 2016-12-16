@@ -6,6 +6,8 @@ import be.isach.ultracosmetics.util.UtilParticles;
 import org.bukkit.entity.Horse;
 
 import java.util.UUID;
+import static org.bukkit.Bukkit.getLogger;
+import org.bukkit.entity.ZombieHorse;
 
 /**
  * Created by sacha on 10/08/15.
@@ -18,11 +20,13 @@ public class MountWalkingDead extends Mount {
 
     @Override
     protected void onEquip() {
-        Horse horse = (Horse) entity;
-        horse.setVariant(Horse.Variant.UNDEAD_HORSE);
-        variant = Horse.Variant.UNDEAD_HORSE;
+        ZombieHorse horse = (ZombieHorse) entity;
+        //horse.setVariant(Horse.Variant.UNDEAD_HORSE);
+        //variant = Horse.Variant.UNDEAD_HORSE;
+        horse.setTamed(true); //pretty sure this is redundant, same as for infernal horror.
+        //getLogger().info(horse.getInventory().toString()); 
         horse.setJumpStrength(0.7);
-        UltraCosmetics.getInstance().getEntityUtil().setHorseSpeed(horse, 0.4d);
+        //UltraCosmetics.getInstance().getEntityUtil().setHorseSpeed(horse, 0.4d); //apparently can't set the speed of zombie horses
     }
 
     @Override
