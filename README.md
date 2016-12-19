@@ -1,7 +1,7 @@
 # 1.11 Update
 Was having a whole lot of issues, my initial patch to make everything work with 1.11 seemed fine until you actually tried to do anything like summon a pet or mount. This version here has now fixed a lot of those issues but at the expense of working on past versions of minecraft. The version you see here in the master branch is for 1.11 and 1.11 only unfortunately.
 
-Wither pet, pumpling pet, christmas elf pet, wither morph, elder guardian morph, and most of the mounts are currently bugged.
+Wither pet, pumpling pet, christmas elf pet, wither morph, elder guardian morph, and spider mount still bugged. Fixed all the other mounts!
 
 Gadgets work fine, particle effects work fine, all pets and morphs except those mentioned above work fine, hats fork wine, emotes work fine, and suits work fine! 
 
